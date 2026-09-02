@@ -1,0 +1,114 @@
+/* 黑色翻頁時鐘數字。字級由 --fs 控制（在 .clock 上設定）。 */
+
+.clock {
+  --gap: calc(var(--fs) * 0.12);
+  --radius: calc(var(--fs) * 0.09);
+  display: inline-flex;
+  align-items: stretch;
+  gap: var(--gap);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  user-select: none;
+}
+
+.colon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--fs) * 0.34);
+  font-size: calc(var(--fs) * 0.7);
+  font-weight: 800;
+  color: currentColor;
+}
+
+.digit {
+  position: relative;
+  width: calc(var(--fs) * 0.66);
+  height: var(--fs);
+  border-radius: var(--radius);
+  background: #101010;
+  box-shadow:
+    0 calc(var(--fs) * 0.03) calc(var(--fs) * 0.07) rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  perspective: 500px;
+  font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace);
+  font-weight: 700;
+  font-size: calc(var(--fs) * 0.92);
+  color: #f5f5f5;
+}
+
+.half {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50%;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+
+.half span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 200%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upper {
+  top: 0;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: linear-gradient(#2c2c2c, #232323);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+}
+.upper span {
+  top: 0;
+}
+
+.lower {
+  bottom: 0;
+  border-radius: 0 0 var(--radius) var(--radius);
+  background: linear-gradient(#1c1c1c, #141414);
+}
+.lower span {
+  bottom: 0;
+}
+
+.flipTop {
+  z-index: 3;
+  transform-origin: 50% 100%;
+  animation: flipDown 0.28s ease-in forwards;
+}
+
+.flipBottom {
+  z-index: 2;
+  transform: rotateX(90deg);
+  transform-origin: 50% 0%;
+  animation: flipUp 0.28s ease-out 0.28s forwards;
+}
+
+@keyframes flipDown {
+  from {
+    transform: rotateX(0deg);
+  }
+  to {
+    transform: rotateX(-90deg);
+  }
+}
+
+@keyframes flipUp {
+  from {
+    transform: rotateX(90deg);
+  }
+  to {
+    transform: rotateX(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flipTop,
+  .flipBottom {
+    animation-duration: 0.001s;
+  }
+}

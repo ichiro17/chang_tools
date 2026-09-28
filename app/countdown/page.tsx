@@ -13,6 +13,14 @@ import {
   targetDate,
   workload,
 } from "./calendar";
+import {
+  CalendarCheckIcon,
+  ChipIcon,
+  FlagIcon,
+  HourglassIcon,
+  JourneyScene,
+  SkyDecor,
+} from "./art";
 
 const LS_KEY = "chang-tools:countdown:settings";
 
@@ -38,22 +46,12 @@ function fmtTarget(d: Date) {
 }
 
 /** 深色膠囊標籤（底下多一層陰影，像按鈕浮起來）。 */
-function Chip({ children }: { children: React.ReactNode }) {
+function Chip({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <span className="inline-block rounded-full bg-[#3d3935] px-5 py-2 text-base font-bold tracking-wide text-white shadow-[0_5px_0_#d9d3c7]">
+    <span className="inline-flex items-center gap-2 rounded-full bg-[#3d3935] px-5 py-2 text-base font-bold tracking-wide text-white shadow-[0_5px_0_#d9d3c7]">
+      {icon}
       {children}
     </span>
-  );
-}
-
-function Sparkle({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden className={className}>
-      <path
-        d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z"
-        fill="currentColor"
-      />
-    </svg>
   );
 }
 
@@ -96,7 +94,7 @@ function TargetToggle({
   );
 }
 
-/** 左邊：距離放假的倒數。背景的弧線是「已撐過的比例」。 */
+/** 左邊：距離放假的倒數。底部是從學校走向放假的小路，標記停在「已撐過」的位置。 */
 function CountdownCard({ now, mounted, s }: { now: Date; mounted: boolean; s: Settings }) {
   const target = targetDate(s);
   const name = TARGETS.find((t) => t.key === s.target)!.name;
@@ -106,36 +104,18 @@ function CountdownCard({ now, mounted, s }: { now: Date; mounted: boolean; s: Se
   const hms = [Math.floor(rest / 3600), Math.floor((rest % 3600) / 60), rest % 60].map(pad2);
   const pct = progress(now, s);
 
-  // 半徑 140 的圓，從左下往上繞；已撐過的比例畫成深色弧
-  const C = 2 * Math.PI * 140;
-
   return (
-    <section className="relative overflow-hidden rounded-[2.25rem] border border-[#ebe4d6] bg-gradient-to-br from-[#fdf8e8] to-[#fffcf4] p-7 shadow-sm sm:p-9">
-      <svg
-        viewBox="0 0 320 320"
-        aria-hidden
-        className="pointer-events-none absolute -bottom-24 left-1/2 w-[125%] max-w-[34rem] -translate-x-[30%]"
-      >
-        <circle cx="160" cy="160" r="140" fill="none" stroke="#eef3e8" strokeWidth="26" />
-        {mounted && (
-          <circle
-            cx="160"
-            cy="160"
-            r="140"
-            fill="none"
-            stroke="#dbe8d3"
-            strokeWidth="26"
-            strokeLinecap="round"
-            strokeDasharray={`${C * pct} ${C}`}
-            transform="rotate(150 160 160)"
-          />
-        )}
-      </svg>
-      <Sparkle className="absolute right-[18%] top-[16%] h-9 w-9 rotate-12 text-[#8aa9b3]" />
+    <section className="relative overflow-hidden rounded-[2.25rem] border border-[#e6dfd1] bg-[#fbf8f1] shadow-sm">
+      <SkyDecor target={s.target} />
+      <JourneyScene target={s.target} pct={pct} showMarker={mounted} />
 
-      <div className="relative flex flex-col items-center text-center">
-        <div className="self-start">
-          <Chip>距離{name}還有</Chip>
+      <div
+        className="relative flex flex-col items-center px-7 pt-7 text-center sm:px-9 sm:pt-9"
+        style={{ paddingBottom: "calc(28% + 1.5rem)" }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2 self-stretch">
+          <Chip icon={<ChipIcon kind={s.target} />}>距離{name}還有</Chip>
+          <span className="text-sm font-bold text-[#7a7367]">目標日 {fmtTarget(target)}</span>
         </div>
         <p className="mt-6 text-3xl font-black tracking-wider text-[#3d3935] sm:text-4xl">
           {mounted ? cheer(days) : " "}
@@ -153,66 +133,77 @@ function CountdownCard({ now, mounted, s }: { now: Date; mounted: boolean; s: Se
           {mounted ? (
             <>
               {hms[0]}
-              <span className="text-[#e08a5f]">:</span>
+              <span className="text-[#d9895f]">:</span>
               {hms[1]}
-              <span className="text-[#e08a5f]">:</span>
+              <span className="text-[#d9895f]">:</span>
               {hms[2]}
             </>
           ) : (
             "--:--:--"
           )}
         </p>
-        <p className="mt-8 flex items-center gap-2 text-sm font-semibold text-[#6f685e] sm:text-base">
-          <span aria-hidden>🗓️</span>
-          目標日 {fmtTarget(target)}
-          {mounted && <span className="text-[#a39c90]">· 已撐過 {Math.round(pct * 100)}%</span>}
-        </p>
       </div>
     </section>
   );
 }
 
-/** 右邊：扣掉週末、假日後，真正還要上班的天數與工時。 */
+/** 右邊：扣掉週末、假日後，真正還要上班的天數與工時。畫成教師手帳的橫線內頁。 */
 function WorkloadCard({ now, mounted, s }: { now: Date; mounted: boolean; s: Settings }) {
   const today = now.toDateString();
   // 只在換日或設定改變時重算，不必每秒跑
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const w = useMemo(() => workload(now, s), [today, s]);
 
-  const stat = (emoji: string, label: string, value: number, unit: string) => (
+  const stat = (icon: React.ReactNode, label: string, value: number, unit: string) => (
     <div className="flex flex-col items-center gap-3 text-center">
-      <span className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white text-4xl shadow-sm">
-        {emoji}
+      <span className="flex h-20 w-20 items-center justify-center rounded-3xl border border-[#e6dfd1] bg-white">
+        {icon}
       </span>
-      <span className="mt-2 text-base font-bold text-[#6f685e] sm:text-lg">{label}</span>
+      <span className="mt-2 text-base font-bold text-[#5f594f] sm:text-lg">{label}</span>
       <span
         className="font-black leading-none tracking-[-0.05em] text-[#3d3935] tabular-nums"
         style={{ fontSize: "clamp(3.5rem, 9vw, 5.5rem)" }}
       >
         {mounted ? value.toLocaleString() : "--"}
       </span>
-      <span className="text-sm font-bold text-[#8c857a]">{unit}</span>
+      <span className="text-sm font-bold text-[#7a7367]">{unit}</span>
     </div>
   );
 
   return (
-    <section className="flex flex-col rounded-[2.25rem] border border-[#ebe4d6] bg-gradient-to-br from-[#fbf9f4] to-[#f1f6f4] p-7 shadow-sm sm:p-9">
-      <div className="flex items-center justify-between gap-3">
-        <Chip>教師工作量</Chip>
-        <span className="text-sm font-bold text-[#8c857a]">今天也算在裡面</span>
+    <section
+      className="relative flex flex-col overflow-hidden rounded-[2.25rem] border border-[#e6dfd1] bg-[#fdfbf6] py-7 pl-12 pr-7 shadow-sm sm:py-9 sm:pl-14 sm:pr-9"
+      style={{
+        backgroundImage:
+          "repeating-linear-gradient(to bottom, transparent 0 35px, #ece6da 35px 36px)",
+      }}
+    >
+      {/* 手帳左邊的紅色雙邊線 */}
+      <span aria-hidden className="absolute inset-y-0 left-6 w-0.5 bg-[#f0cfc0]" />
+      <span aria-hidden className="absolute inset-y-0 left-[1.95rem] w-px bg-[#f0cfc0]" />
+
+      <div className="relative flex flex-wrap items-center justify-between gap-2">
+        <Chip icon={<ChipIcon kind="pencil" />}>教師工作量</Chip>
+        <span className="text-sm font-bold text-[#7a7367]">今天也算在裡面</span>
       </div>
 
-      <div className="grid flex-1 grid-cols-2 items-center py-8">
-        {stat("🎒", "真正還要上班", w.days, "天")}
-        <div className="border-l border-dashed border-[#ddd6c9]">
-          {stat("⏰", "真正剩餘工時", w.hours, "小時")}
+      <div className="relative grid flex-1 grid-cols-2 items-center py-8">
+        {stat(<CalendarCheckIcon className="h-11 w-11" />, "真正還要上班", w.days, "天")}
+        <div className="border-l-2 border-dashed border-[#ddd5c6]">
+          {stat(<HourglassIcon className="h-11 w-11" />, "真正剩餘工時", w.hours, "小時")}
         </div>
       </div>
 
       {mounted && w.nextBreak && (
-        <p className="rounded-2xl bg-white/70 px-4 py-3 text-center text-sm font-semibold text-[#6f685e]">
+        <p className="relative flex flex-wrap items-center justify-center gap-x-2 rounded-2xl border border-[#ebe4d6] bg-white px-4 py-3 text-center text-sm font-bold text-[#5f594f]">
+          {/* 紙膠帶 */}
+          <span
+            aria-hidden
+            className="absolute -top-2 left-4 h-4 w-16 -rotate-3 bg-[#e9c48c]/55"
+          />
+          <FlagIcon className="h-[18px] w-[18px]" />
           下一個平日放假：
-          <span className="text-[#c96b4a]">
+          <span className="text-[#b85c3c]">
             {w.nextBreak.date.getMonth() + 1}/{w.nextBreak.date.getDate()}（
             {WEEK[w.nextBreak.date.getDay()]}）{w.nextBreak.label}
           </span>
@@ -221,6 +212,7 @@ function WorkloadCard({ now, mounted, s }: { now: Date; mounted: boolean; s: Set
     </section>
   );
 }
+
 
 function Toggle({
   checked,

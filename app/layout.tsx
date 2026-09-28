@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "小張的小工具箱",
-  description: "給老師的課堂小工具：抽籤轉盤、課堂時鐘 / 考程、課堂模式。打開就能用，免登入、免安裝。",
+  description: "給老師的課堂小工具：抽籤轉盤、課堂時鐘 / 考程、課堂模式、撐到放假。打開就能用，免登入、免安裝。",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -61,6 +61,22 @@ const TOOLS: Tool[] = [
     color: "#059669",
     tint: "rgba(5,150,105,0.12)",
   },
+  {
+    emoji: "🏖️",
+    title: "撐到放假",
+    subtitle: "寒暑假倒數 · 教師工作量",
+    href: "/countdown",
+    anchor: "countdown",
+    desc: "距離寒假、暑假還有幾天幾時幾分？扣掉週末、國定假日和你自己的快樂假日，算出真正還要上幾天班。",
+    features: [
+      "寒假 / 暑假目標一鍵切換",
+      "內建 115 學年度行事曆與國定假日",
+      "自訂學期日期、每日工時",
+      "加入校慶補休等自訂假日",
+    ],
+    color: "#c96b4a",
+    tint: "rgba(201,107,74,0.14)",
+  },
 ];
 
 export default function Home() {
@@ -124,8 +140,8 @@ export default function Home() {
               </span>
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-              三個上課會用到的小工具，打開就能用 —— 免登入、免安裝。
-              點名抽籤、課堂時鐘、投影指令，一個網站搞定。
+              四個上課會用到的小工具，打開就能用 —— 免登入、免安裝。
+              點名抽籤、課堂時鐘、投影指令、放假倒數，一個網站搞定。
             </p>
             <div className="mt-9 flex flex-wrap justify-center gap-3">
               <a
@@ -151,11 +167,11 @@ export default function Home() {
               工具
             </h2>
             <p className="mt-2 text-2xl font-bold sm:text-3xl">
-              三個工具，涵蓋一堂課的大小事
+              四個工具，涵蓋一堂課的大小事
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
             {TOOLS.map((t) => (
               <article
                 key={t.anchor}

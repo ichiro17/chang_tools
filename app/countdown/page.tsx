@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { Icon } from "@/app/components/Icon";
+import { ToolHeader, btn } from "@/app/components/ToolHeader";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   DEFAULT_SETTINGS,
@@ -494,31 +495,22 @@ export default function CountdownPage() {
   }, [now, mounted, s]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#fcf6ea] to-[#f5efe3] px-4 py-8 text-[#3d3935] sm:px-8">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        <header className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-black tracking-tight sm:text-3xl">🏖️ 撐到放假</h1>
-            <p className="mt-1 text-sm font-semibold text-[#8c857a]">
-              寒暑假倒數，順便算算真正還要上幾天班
-            </p>
-          </div>
-          <div className="flex shrink-0 gap-2">
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="rounded-lg border border-[#e3dccd] bg-white px-3 py-1.5 text-sm font-semibold hover:bg-[#f3eee4]"
-            >
-              ⚙️ 設定
-            </button>
-            <Link
-              href="/"
-              className="rounded-lg border border-[#e3dccd] px-3 py-1.5 text-sm font-semibold hover:bg-white"
-            >
-              ← 首頁
-            </Link>
-          </div>
-        </header>
+    <div className="min-h-screen bg-gradient-to-b from-[#fcf6ea] to-[#f5efe3] text-[#3d3935]">
+      <ToolHeader
+        tool="countdown"
+        actions={
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className={`${btn.base} ${btn.dark}`}
+          >
+            <Icon name="settings" className="h-[18px] w-[18px]" />
+            設定
+          </button>
+        }
+      />
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-8">
+        <p className="text-sm font-semibold text-muted">寒暑假倒數，順便算算真正還要上幾天班</p>
 
         <div className="sm:ml-auto sm:w-[40rem] sm:max-w-full">
           <TargetToggle value={s.target} onChange={(t) => update({ target: t })} />

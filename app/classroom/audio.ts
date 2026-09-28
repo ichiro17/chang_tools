@@ -172,6 +172,10 @@ export function createAudioEngine(ctx: AudioContext) {
     resume() {
       if (ctx.state === "suspended") void ctx.resume();
     },
+    // 總音量（聲音開關與音量滑桿）
+    setMaster(vol: number) {
+      master.gain.setTargetAtTime(vol, ctx.currentTime, 0.05);
+    },
     startPad,
     stopPad,
     setPadVol,

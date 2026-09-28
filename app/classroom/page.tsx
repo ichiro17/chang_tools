@@ -1,67 +1,74 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createAudioEngine, type AudioEngine, type NoiseType } from "./audio";
 import { FlipClock, barColor } from "@/app/components/FlipClock";
+import { Icon, type IconName, PlayIcon } from "@/app/components/Icon";
+import { ToolHeader, btn } from "@/app/components/ToolHeader";
+import { type AudioEngine, type NoiseType, createAudioEngine } from "./audio";
 
 type ModeId = "quiet" | "group" | "attention" | "selfstudy" | "exam";
 
 type Mode = {
   id: ModeId;
-  emoji: string;
+  icon: IconName;
   title: string;
   line: string;
   usesTimer: boolean; // 此模式是否搭配倒數
   defaultSec: number; // 選此模式時帶入的預設秒數（不會自動開始，要老師按）
-  bg: string;
+  tile: string; // 控制台卡片圖示底色
+  stage: string; // 投影畫面底色（較深，白字高對比）
 };
 
 const MODES: Mode[] = [
   {
     id: "quiet",
-    emoji: "🔇",
+    icon: "speakerOff",
     title: "安靜模式",
     line: "現在進行個人作業",
     usesTimer: false,
     defaultSec: 0,
-    bg: "linear-gradient(135deg,#1e3a8a,#1d4ed8)",
+    tile: "#1d4ed8",
+    stage: "#1e3a8a",
   },
   {
     id: "group",
-    emoji: "👥",
+    icon: "users",
     title: "小組討論",
     line: "3 分鐘討論時間",
     usesTimer: true,
     defaultSec: 180,
-    bg: "linear-gradient(135deg,#0f766e,#059669)",
+    tile: "#047857",
+    stage: "#064e3b",
   },
   {
     id: "attention",
-    emoji: "👀",
+    icon: "eye",
     title: "看老師",
     line: "請停止手邊工作，注意前方",
     usesTimer: false,
     defaultSec: 0,
-    bg: "linear-gradient(135deg,#b45309,#dc2626)",
+    tile: "#c2410c",
+    stage: "#9a3412",
   },
   {
     id: "selfstudy",
-    emoji: "📖",
+    icon: "book",
     title: "自主學習",
     line: "開始自主學習",
     usesTimer: true,
     defaultSec: 900,
-    bg: "linear-gradient(135deg,#5b21b6,#7c3aed)",
+    tile: "#6d28d9",
+    stage: "#4c1d95",
   },
   {
     id: "exam",
-    emoji: "📝",
+    icon: "exam",
     title: "測驗模式",
     line: "請準備開始作答",
     usesTimer: true,
     defaultSec: 1800,
-    bg: "linear-gradient(135deg,#0f172a,#334155)",
+    tile: "#334155",
+    stage: "#1e293b",
   },
 ];
 
@@ -85,6 +92,19 @@ function fmt(ms: number) {
   return h > 0 ? `${h}:${pad(m)}:${pad(ss)}` : `${pad(m)}:${pad(ss)}`;
 }
 
+function Kbd({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
+  return (
+    <kbd
+      className={`rounded-md px-2 py-0.5 font-sans font-bold ${
+        dark ? "bg-white/20 text-white" : "border-[1.5px] border-line-strong bg-white text-ink"
+      }`}
+    >
+      {children}
+    </kbd>
+  );
+}
+
+/** 投影畫面：大圖示、模式名稱、一句指令、倒數。單色底、白字高對比。 */
 function Stage({
   mode,
   showTimer,
@@ -101,27 +121,15 @@ function Stage({
   const low = showTimer && remainingMs <= 10_000 && remainingMs > 0;
   return (
     <div
-      className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden text-center text-white select-none"
-      style={{ background: mode.bg, containerType: "size" }}
+      className="relative flex h-full w-full select-none flex-col items-center justify-center overflow-hidden text-center text-white"
+      style={{ background: mode.stage, containerType: "size" }}
     >
-      <div
-        className={flash ? "animate-pulse" : ""}
-        style={{ lineHeight: 1.12 }}
-      >
-        <div style={{ fontSize: "clamp(2rem, 17cqh, 15rem)" }}>{mode.emoji}</div>
-        <div
-          className="font-black tracking-wide"
-          style={{ fontSize: "clamp(1.5rem, 11cqh, 10rem)" }}
-        >
+      <div className={`flex flex-col items-center ${flash ? "animate-pulse" : ""}`} style={{ gap: "1.5cqh" }}>
+        <Icon name={mode.icon} strokeWidth={1.6} className="h-[16cqh] w-[16cqh]" />
+        <div className="font-black tracking-[0.06em]" style={{ fontSize: "clamp(1.5rem, 16cqh, 10rem)", lineHeight: 1.1 }}>
           {mode.title}
         </div>
-        <div
-          className="font-medium opacity-90"
-          style={{
-            fontSize: "clamp(0.95rem, 5cqh, 4rem)",
-            marginTop: "2cqh",
-          }}
-        >
+        <div className="font-bold text-[#f4f4f5]" style={{ fontSize: "clamp(0.95rem, 5.5cqh, 4rem)" }}>
           {mode.line}
         </div>
       </div>
@@ -129,16 +137,10 @@ function Stage({
       {showTimer && (
         <div
           className={`flex flex-col items-center ${low ? "animate-pulse" : ""}`}
-          style={{ marginTop: "3cqh", gap: "3cqh", color: low ? "#fecaca" : "#ffffff" }}
+          style={{ marginTop: "3.5cqh", gap: "3cqh", color: low ? "#fecaca" : "#ffffff" }}
         >
-          <FlipClock
-            text={fmt(remainingMs)}
-            fontSize="clamp(2rem, 15cqh, 12rem)"
-          />
-          <div
-            className="overflow-hidden rounded-full bg-black/25"
-            style={{ height: "1.4cqh", width: "56cqw" }}
-          >
+          <FlipClock text={fmt(remainingMs)} fontSize="clamp(2rem, 14cqh, 11rem)" />
+          <div className="overflow-hidden rounded-full bg-black/30" style={{ height: "1.6cqh", width: "56cqw" }}>
             <div
               className="h-full rounded-full"
               style={{
@@ -159,6 +161,7 @@ export default function ClassroomPage() {
   const [projecting, setProjecting] = useState(false);
   const [isFs, setIsFs] = useState(false);
   const [flash, setFlash] = useState(false);
+  const [hint, setHint] = useState(true);
 
   // 倒數
   const [timerTotalMs, setTimerTotalMs] = useState(180_000);
@@ -168,6 +171,10 @@ export default function ClassroomPage() {
   const [customMin, setCustomMin] = useState("5");
 
   // 聲音
+  const [soundOn, setSoundOn] = useState(true);
+  const [volume, setVolume] = useState(0.8);
+  const [audioReady, setAudioReady] = useState(false);
+  const [moreSound, setMoreSound] = useState(false);
   const [musicOn, setMusicOn] = useState(false);
   const [musicLevel, setMusicLevel] = useState(0.4);
   const [noiseOn, setNoiseOn] = useState(false);
@@ -182,25 +189,28 @@ export default function ClassroomPage() {
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const mode = MODES.find((m) => m.id === currentMode) ?? MODES[0];
-  const pct =
-    timerTotalMs > 0
-      ? Math.max(0, Math.min(100, (timerRemainingMs / timerTotalMs) * 100))
-      : 0;
+  const pct = timerTotalMs > 0 ? Math.max(0, Math.min(100, (timerRemainingMs / timerTotalMs) * 100)) : 0;
+  const cues = cueOn && soundOn;
 
   const ensureAudio = useCallback((): AudioEngine | null => {
     if (typeof window === "undefined") return null;
     if (!ctxRef.current) {
       const AC =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext?: typeof AudioContext })
-          .webkitAudioContext;
+        window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!AC) return null;
-      ctxRef.current = new AC();
+      const ctx = new AC();
+      ctx.onstatechange = () => setAudioReady(ctx.state === "running");
+      ctxRef.current = ctx;
     }
     if (!engRef.current) engRef.current = createAudioEngine(ctxRef.current);
     engRef.current.resume();
     return engRef.current;
   }, []);
+
+  // 聲音開關與總音量
+  useEffect(() => {
+    engRef.current?.setMaster(soundOn ? volume : 0);
+  }, [soundOn, volume, audioReady]);
 
   // 背景音樂開關 / 音量
   useEffect(() => {
@@ -227,28 +237,23 @@ export default function ClassroomPage() {
       const secs = Math.ceil(rem / 1000);
       const totalSecs = Math.ceil(timerTotalMs / 1000);
       for (const mark of [60, 30, 10]) {
-        if (
-          secs <= mark &&
-          secs > 0 &&
-          totalSecs > mark &&
-          !firedRef.current.has(mark)
-        ) {
+        if (secs <= mark && secs > 0 && totalSecs > mark && !firedRef.current.has(mark)) {
           firedRef.current.add(mark);
-          if (cueOn) engRef.current?.attention();
+          if (cues) engRef.current?.attention();
         }
       }
       if (rem <= 0) {
         setTimerRunning(false);
         if (!firedRef.current.has(0)) {
           firedRef.current.add(0);
-          if (cueOn) (ensureAudio() ?? engRef.current)?.alarm();
+          if (cues) (ensureAudio() ?? engRef.current)?.alarm();
         }
       }
     };
     tick();
     const id = window.setInterval(tick, 200);
     return () => window.clearInterval(id);
-  }, [timerRunning, timerTotalMs, cueOn, ensureAudio]);
+  }, [timerRunning, timerTotalMs, cues, ensureAudio]);
 
   const startTimer = useCallback(() => {
     const rem = timerRemainingMs <= 0 ? timerTotalMs : timerRemainingMs;
@@ -294,7 +299,7 @@ export default function ClassroomPage() {
       setCurrentMode(id);
       const m = MODES.find((x) => x.id === id);
       if (!m) return;
-      if (cueOn) {
+      if (cues) {
         const e = ensureAudio();
         if (id === "attention") e?.attention();
         else e?.chime();
@@ -314,18 +319,18 @@ export default function ClassroomPage() {
         setShowTimer(false);
       }
     },
-    [cueOn, ensureAudio],
+    [cues, ensureAudio],
   );
 
   // 全螢幕
   const requestFs = useCallback(() => {
     if (typeof document === "undefined") return;
-    if (!document.fullscreenElement) void wrapRef.current?.requestFullscreen?.();
+    if (!document.fullscreenElement) void wrapRef.current?.requestFullscreen?.().catch(() => {});
   }, []);
 
   const toggleFs = useCallback(() => {
     if (typeof document === "undefined") return;
-    if (!document.fullscreenElement) void wrapRef.current?.requestFullscreen?.();
+    if (!document.fullscreenElement) void wrapRef.current?.requestFullscreen?.().catch(() => {});
     else void document.exitFullscreen?.();
   }, []);
 
@@ -345,10 +350,14 @@ export default function ClassroomPage() {
     ensureAudio();
   }, [requestFs, ensureAudio]);
 
+  const previewProjection = useCallback(() => {
+    setProjecting(true);
+    ensureAudio();
+  }, [ensureAudio]);
+
   const stopProjection = useCallback(() => {
     setProjecting(false);
-    if (typeof document !== "undefined" && document.fullscreenElement)
-      void document.exitFullscreen?.();
+    if (typeof document !== "undefined" && document.fullscreenElement) void document.exitFullscreen?.();
   }, []);
 
   // 執行倒數時避免螢幕休眠
@@ -380,6 +389,8 @@ export default function ClassroomPage() {
         const m = MODES[Number(e.key) - 1];
         if (m) selectMode(m.id);
       } else if (e.code === "Space") {
+        // 焦點在按鈕上時，空白鍵交給按鈕本身
+        if (el?.tagName === "BUTTON") return;
         e.preventDefault();
         if (timerRunning) pauseTimer();
         else startTimer();
@@ -394,21 +405,12 @@ export default function ClassroomPage() {
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [
-    selectMode,
-    timerRunning,
-    pauseTimer,
-    startTimer,
-    toggleFs,
-    projecting,
-    startProjection,
-    stopProjection,
-  ]);
+  }, [selectMode, timerRunning, pauseTimer, startTimer, toggleFs, projecting, startProjection, stopProjection]);
 
   // 分頁標題
   useEffect(() => {
     const prev = document.title;
-    document.title = `${mode.emoji} ${mode.title} · 課堂模式`;
+    document.title = `${mode.title} · 課堂模式`;
     return () => {
       document.title = prev;
     };
@@ -421,39 +423,40 @@ export default function ClassroomPage() {
     };
   }, []);
 
+  const shortcuts = (dark?: boolean) => (
+    <>
+      <span>
+        <Kbd dark={dark}>1–5</Kbd> 切換模式
+      </span>
+      <span>
+        <Kbd dark={dark}>Space</Kbd> 開始／暫停
+      </span>
+      <span>
+        <Kbd dark={dark}>Esc</Kbd> 離開投影
+      </span>
+    </>
+  );
+
   return (
-    <div
-      ref={wrapRef}
-      className={
-        projecting
-          ? "fixed inset-0 z-50 bg-black"
-          : "min-h-screen bg-zinc-50 px-4 py-8 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 sm:px-8"
-      }
-    >
+    <div ref={wrapRef} className={projecting ? "fixed inset-0 z-50 bg-black" : "min-h-screen bg-paper text-ink"}>
       {projecting ? (
         <div className="relative h-full w-full">
-          <Stage
-            mode={mode}
-            showTimer={showTimer}
-            remainingMs={timerRemainingMs}
-            pct={pct}
-            flash={flash}
-          />
+          <Stage mode={mode} showTimer={showTimer} remainingMs={timerRemainingMs} pct={pct} flash={flash} />
 
           {/* 上方：模式切換 dock（平時淡出，滑鼠移上去變清楚） */}
           <div className="group absolute inset-x-0 top-0 flex justify-center p-3">
-            <div className="flex flex-wrap justify-center gap-2 opacity-25 transition-opacity duration-200 group-hover:opacity-100">
+            <div className="flex flex-wrap justify-center gap-2 opacity-25 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100">
               {MODES.map((m, i) => (
                 <button
                   key={m.id}
+                  type="button"
                   onClick={() => selectMode(m.id)}
-                  className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-base font-semibold text-white backdrop-blur transition ${
-                    m.id === currentMode
-                      ? "bg-white/30 ring-2 ring-white"
-                      : "bg-black/35 hover:bg-black/55"
+                  aria-pressed={m.id === currentMode}
+                  className={`flex min-h-11 items-center gap-2 rounded-full px-4 text-base font-bold text-white backdrop-blur transition ${
+                    m.id === currentMode ? "bg-white/30 ring-2 ring-white" : "bg-black/35 hover:bg-black/55"
                   }`}
                 >
-                  <span className="text-lg">{m.emoji}</span>
+                  <Icon name={m.icon} className="h-5 w-5" />
                   <span className="hidden sm:inline">
                     {i + 1}. {m.title}
                   </span>
@@ -462,314 +465,416 @@ export default function ClassroomPage() {
             </div>
           </div>
 
-          {/* 右上：控制 */}
-          <div className="absolute right-3 top-3 flex gap-2 opacity-40 transition-opacity hover:opacity-100">
-            <button
-              onClick={toggleFs}
-              className="rounded-lg bg-black/40 px-3 py-1.5 text-sm text-white hover:bg-black/60"
-            >
-              {isFs ? "視窗" : "全螢幕"}
-            </button>
-            <button
-              onClick={stopProjection}
-              className="rounded-lg bg-black/40 px-3 py-1.5 text-sm text-white hover:bg-black/60"
-            >
-              ✕ 離開投影
-            </button>
-          </div>
+          {/* 左上：回控制台 */}
+          <button
+            type="button"
+            onClick={stopProjection}
+            className="absolute left-3 top-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-black/30 px-3.5 text-[15px] font-bold text-white hover:bg-black/50"
+          >
+            <Icon name="arrowLeft" className="h-[18px] w-[18px]" />
+            回控制台
+          </button>
+          <button
+            type="button"
+            onClick={toggleFs}
+            className="absolute right-3 top-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-black/30 px-3.5 text-[15px] font-bold text-white hover:bg-black/50"
+          >
+            <Icon name="maximize" className="h-[18px] w-[18px]" />
+            {isFs ? "離開全螢幕" : "全螢幕"}
+          </button>
 
           {/* 倒數控制：老師按了才開始 */}
           {showTimer && (
-            <div className="absolute inset-x-0 bottom-[8vh] flex justify-center">
+            <div className="absolute inset-x-0 bottom-[9vh] flex justify-center">
               {!timerRunning ? (
                 <button
+                  type="button"
                   onClick={startTimer}
-                  className="rounded-2xl bg-white/95 px-10 py-4 text-2xl font-black text-zinc-900 shadow-xl transition hover:bg-white active:scale-[0.98]"
+                  className="inline-flex items-center gap-3 rounded-2xl bg-white px-10 py-4 text-2xl font-black text-ink shadow-xl transition hover:bg-[#f4f4f5] active:scale-[0.98]"
                 >
-                  ▶ 開始倒數
+                  <PlayIcon className="h-7 w-7" />
+                  開始倒數
                 </button>
               ) : (
-                <div className="flex gap-3 opacity-40 transition-opacity hover:opacity-100">
+                <div className="flex gap-3 opacity-40 transition-opacity focus-within:opacity-100 hover:opacity-100">
                   <button
+                    type="button"
                     onClick={pauseTimer}
-                    className="rounded-xl bg-black/45 px-6 py-2.5 text-lg font-semibold text-white hover:bg-black/65"
+                    className="min-h-11 rounded-xl bg-black/45 px-6 text-lg font-bold text-white hover:bg-black/65"
                   >
-                    ⏸ 暫停
+                    暫停
                   </button>
                   <button
+                    type="button"
                     onClick={resetTimer}
-                    className="rounded-xl bg-black/45 px-6 py-2.5 text-lg font-semibold text-white hover:bg-black/65"
+                    className="min-h-11 rounded-xl bg-black/45 px-6 text-lg font-bold text-white hover:bg-black/65"
                   >
-                    ↺ 重設
+                    重設
                   </button>
                 </div>
               )}
             </div>
           )}
+
+          {/* 右下：快捷鍵提示，可隱藏 */}
+          {hint && (
+            <div className="absolute bottom-3 right-3 hidden items-center gap-4 rounded-2xl bg-black/35 py-1.5 pl-4 pr-1.5 text-[15px] text-[#f4f4f5] md:flex">
+              {shortcuts(true)}
+              <button
+                type="button"
+                onClick={() => setHint(false)}
+                aria-label="隱藏快捷鍵提示"
+                className="flex h-11 w-11 items-center justify-center rounded-xl hover:bg-white/10"
+              >
+                <Icon name="close" className="h-[18px] w-[18px]" />
+              </button>
+            </div>
+          )}
         </div>
       ) : (
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-          <header className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                🏫 課堂模式 Classroom Mode
-              </h1>
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                按一個按鈕，投影幕就顯示清楚的課堂指令 · 倒數 · 背景音樂 · 白噪音 · 提示音 · 全螢幕投影
-              </p>
-            </div>
-            <Link
-              href="/"
-              className="shrink-0 rounded-lg border border-zinc-300 px-3 py-1.5 text-sm hover:bg-white dark:border-zinc-700 dark:hover:bg-zinc-900"
-            >
-              ← 首頁
-            </Link>
-          </header>
-
-          {/* 預覽 */}
-          <div className="w-full overflow-hidden rounded-2xl border border-zinc-200 shadow-lg dark:border-zinc-800">
-            <div className="aspect-[16/9] w-full">
-              <Stage
-                mode={mode}
-                showTimer={showTimer}
-                remainingMs={timerRemainingMs}
-                pct={pct}
-                flash={flash}
-              />
-            </div>
-          </div>
-
-          {/* 模式按鈕 */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {MODES.map((m, i) => (
-              <button
-                key={m.id}
-                onClick={() => selectMode(m.id)}
-                className={`flex flex-col items-start gap-1 rounded-xl p-4 text-left text-white shadow-sm transition hover:brightness-110 active:scale-[0.98] ${
-                  m.id === currentMode ? "ring-4 ring-offset-2 ring-zinc-900 dark:ring-white dark:ring-offset-zinc-950" : ""
-                }`}
-                style={{ background: m.bg }}
-              >
-                <span className="text-3xl">{m.emoji}</span>
-                <span className="text-lg font-bold">
-                  {i + 1}. {m.title}
-                </span>
-                <span className="text-sm opacity-90">{m.line}</span>
-                {m.usesTimer && (
-                  <span className="mt-1 rounded bg-white/20 px-1.5 py-0.5 text-xs">
-                    倒數 {Math.round(m.defaultSec / 60)} 分（按開始）
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* 投影按鈕 */}
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={startProjection}
-              className="rounded-xl bg-zinc-900 px-6 py-3 text-lg font-bold text-white shadow-sm transition hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-            >
-              🖥️ 開始投影（全螢幕）
-            </button>
-            <button
-              onClick={() => {
-                setProjecting(true);
-                ensureAudio();
-              }}
-              className="rounded-xl border border-zinc-300 px-5 py-3 font-semibold hover:bg-white dark:border-zinc-700 dark:hover:bg-zinc-900"
-            >
-              投影模式（不全螢幕）
-            </button>
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">
-              投影後：數字鍵 1–5 切換模式 · 空白鍵 倒數開始／暫停 · Esc 離開
-            </span>
-          </div>
-
-          {/* 控制面板 */}
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* 倒數 */}
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold">⏱️ 倒數計時</h2>
-                <span className="font-mono text-lg font-bold tabular-nums">
-                  {fmt(timerRemainingMs)}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={timerRunning ? pauseTimer : startTimer}
-                  className={`rounded-lg px-4 py-1.5 text-sm font-semibold text-white ${
-                    timerRunning
-                      ? "bg-amber-500 hover:bg-amber-400"
-                      : "bg-emerald-600 hover:bg-emerald-500"
-                  }`}
-                >
-                  {timerRunning ? "暫停" : "開始"}
-                </button>
-                <button
-                  onClick={resetTimer}
-                  className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                >
-                  重設
-                </button>
-                <button
-                  onClick={() => {
-                    setShowTimer(false);
-                    setTimerRunning(false);
-                  }}
-                  className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                >
-                  隱藏
-                </button>
-                {[-60_000, 60_000].map((d) => (
+        <>
+          <ToolHeader
+            tool="classroom"
+            actions={
+              <>
+                <span className="hidden md:contents">
                   <button
-                    key={d}
-                    onClick={() => addTimer(d)}
-                    className="rounded-lg bg-zinc-200 px-3 py-1.5 text-sm font-medium hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+                    type="button"
+                    onClick={previewProjection}
+                    className={`${btn.base} border-[1.5px] border-classroom bg-white text-classroom hover:bg-classroom-tint`}
                   >
-                    {d > 0 ? "+1 分" : "−1 分"}
+                    開啟投影預覽
                   </button>
-                ))}
+                </span>
+                <button type="button" onClick={startProjection} className={`${btn.base} bg-classroom font-black text-white hover:brightness-110`}>
+                  <Icon name="maximize" className="h-[18px] w-[18px]" strokeWidth={2.2} />
+                  <span className="hidden sm:inline">開始全螢幕投影</span>
+                  <span className="sm:hidden">投影</span>
+                </button>
+              </>
+            }
+          />
+
+          <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-7">
+            <section className="flex flex-col gap-3.5">
+              <h2 className="text-xl font-black">選擇課堂模式</h2>
+              <div role="radiogroup" aria-label="課堂模式" className="grid grid-cols-2 gap-4 pt-3 sm:grid-cols-3 lg:grid-cols-5">
+                {MODES.map((m, i) => {
+                  const on = m.id === currentMode;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={on}
+                      onClick={() => selectMode(m.id)}
+                      className={`relative flex min-h-[200px] flex-col items-start gap-2.5 rounded-[20px] p-4 text-left transition sm:p-5 ${
+                        on
+                          ? "border-[3px] border-ink bg-[#f0f7f3] shadow-[0_6px_0_#1f1d1a]"
+                          : "border-[1.5px] border-line bg-white hover:-translate-y-0.5 hover:border-line-strong"
+                      }`}
+                    >
+                      {on && (
+                        <span className="absolute -top-3.5 left-4 flex items-center gap-1.5 rounded-full bg-ink px-3 py-1 text-[13px] font-black text-white">
+                          <Icon name="check" className="h-3.5 w-3.5" strokeWidth={3.2} />
+                          目前使用中
+                        </span>
+                      )}
+                      <span className="flex w-full items-start justify-between">
+                        <span
+                          className="flex h-14 w-14 items-center justify-center rounded-2xl text-white"
+                          style={{ background: m.tile }}
+                        >
+                          <Icon name={m.icon} className="h-[30px] w-[30px]" />
+                        </span>
+                        <kbd
+                          aria-hidden
+                          className={`flex h-7 min-w-7 items-center justify-center rounded-lg px-2 font-sans text-[15px] font-bold ${
+                            on ? "bg-ink text-white" : "border-[1.5px] border-line-strong text-muted"
+                          }`}
+                        >
+                          {i + 1}
+                        </kbd>
+                      </span>
+                      <span className="text-xl font-black sm:text-[21px]">{m.title}</span>
+                      <span className="flex-1 text-sm leading-normal text-muted">{m.line}</span>
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-[13px] font-bold ${
+                          on && m.usesTimer ? "bg-classroom text-white" : "bg-[#f1ede5] text-muted"
+                        }`}
+                      >
+                        {m.usesTimer ? `倒數 ${Math.round(m.defaultSec / 60)} 分` : "不倒數"}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {TIMER_PRESETS.map((min) => (
+            </section>
+
+            <div className="grid items-start gap-5 md:grid-cols-2">
+              {/* 倒數 */}
+              <section className="flex flex-col gap-4 rounded-[20px] border-[1.5px] border-line bg-white p-5 sm:p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-lg font-black">倒數計時</h2>
+                  <span className="text-sm text-muted">
+                    {mode.title}
+                    {mode.usesTimer ? ` · 預設 ${Math.round(mode.defaultSec / 60)} 分` : ""}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <span className="text-6xl font-extrabold leading-none tabular-nums sm:text-7xl" aria-live="off">
+                    {fmt(timerRemainingMs)}
+                  </span>
+                  <div className="flex gap-2">
+                    {[-60_000, 60_000].map((d) => (
+                      <button key={d} type="button" onClick={() => addTimer(d)} className={`${btn.base} ${btn.secondary}`}>
+                        {d > 0 ? "＋1 分" : "−1 分"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-2.5">
                   <button
-                    key={min}
-                    onClick={() => configTimer(min * 60_000)}
-                    className={`rounded-md px-2.5 py-1 text-sm font-medium transition ${
-                      timerTotalMs === min * 60_000
-                        ? "bg-emerald-600 text-white"
-                        : "bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+                    type="button"
+                    onClick={timerRunning ? pauseTimer : startTimer}
+                    className={`${btn.base} min-h-14 flex-1 text-lg font-black text-white hover:brightness-110 ${
+                      timerRunning ? "bg-[#b45309]" : "bg-classroom"
                     }`}
                   >
-                    {min} 分
+                    {!timerRunning && <PlayIcon className="h-5 w-5" />}
+                    {timerRunning ? "暫停" : "開始倒數"}
                   </button>
-                ))}
-              </div>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="text-sm">自訂</span>
-                <input
-                  type="number"
-                  min={0}
-                  value={customMin}
-                  onChange={(e) => setCustomMin(e.target.value)}
-                  className="w-16 rounded-lg border border-zinc-300 bg-zinc-50 px-2 py-1 text-center dark:border-zinc-700 dark:bg-zinc-950"
-                />
-                <span className="text-sm">分</span>
-                <button
-                  onClick={() => {
-                    const m = Math.max(0, Math.floor(Number(customMin) || 0));
-                    if (m > 0) configTimer(m * 60_000);
-                  }}
-                  className="rounded-lg bg-zinc-900 px-3 py-1 text-sm font-semibold text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-                >
-                  套用
-                </button>
-              </div>
-            </div>
-
-            {/* 聲音 */}
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-              <h2 className="mb-3 text-sm font-semibold">🎵 聲音</h2>
-
-              <label className="flex items-center justify-between gap-3 py-1.5 text-sm">
-                <span className="flex items-center gap-2 font-medium">
-                  <input
-                    type="checkbox"
-                    checked={musicOn}
-                    onChange={(e) => {
-                      ensureAudio();
-                      setMusicOn(e.target.checked);
-                    }}
-                    className="h-4 w-4"
-                  />
-                  背景音樂（環境音）
-                </span>
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.02}
-                  value={musicLevel}
-                  onChange={(e) => setMusicLevel(Number(e.target.value))}
-                  className="w-28"
-                  disabled={!musicOn}
-                />
-              </label>
-
-              <div className="flex items-center justify-between gap-3 py-1.5 text-sm">
-                <span className="flex items-center gap-2 font-medium">
-                  <input
-                    type="checkbox"
-                    checked={noiseOn}
-                    onChange={(e) => {
-                      ensureAudio();
-                      setNoiseOn(e.target.checked);
-                    }}
-                    className="h-4 w-4"
-                  />
-                  白噪音
-                </span>
+                  <button type="button" onClick={resetTimer} className={`${btn.base} ${btn.secondary} min-h-14 px-5 text-base`}>
+                    重設
+                  </button>
+                  {showTimer && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowTimer(false);
+                        setTimerRunning(false);
+                      }}
+                      className={`${btn.base} ${btn.secondary} min-h-14 px-4 text-base`}
+                    >
+                      隱藏
+                    </button>
+                  )}
+                </div>
+                <div role="group" aria-label="快速設定倒數" className="flex flex-wrap gap-2">
+                  {TIMER_PRESETS.map((min) => {
+                    const on = timerTotalMs === min * 60_000;
+                    return (
+                      <button
+                        key={min}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => configTimer(min * 60_000)}
+                        className={`min-h-11 rounded-full px-4 text-[15px] font-bold ${
+                          on ? "border-2 border-ink bg-ink text-white" : "border-[1.5px] border-line-strong bg-white text-ink hover:bg-paper"
+                        }`}
+                      >
+                        {min} 分
+                      </button>
+                    );
+                  })}
+                </div>
                 <div className="flex items-center gap-2">
-                  <select
-                    value={noiseType}
-                    onChange={(e) =>
-                      setNoiseType(e.target.value as NoiseType)
-                    }
-                    disabled={!noiseOn}
-                    className="rounded-md border border-zinc-300 bg-zinc-50 px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+                  <label htmlFor="custom-min" className="text-[15px] font-bold">
+                    自訂
+                  </label>
+                  <input
+                    id="custom-min"
+                    type="number"
+                    min={1}
+                    inputMode="numeric"
+                    value={customMin}
+                    onChange={(e) => setCustomMin(e.target.value)}
+                    className="min-h-11 w-20 rounded-xl border-[1.5px] border-line-strong bg-white px-2 text-center text-base font-bold"
+                  />
+                  <span className="text-[15px]">分</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const m = Math.max(0, Math.floor(Number(customMin) || 0));
+                      if (m > 0) configTimer(m * 60_000);
+                    }}
+                    className={`${btn.base} ${btn.dark}`}
                   >
-                    {(Object.keys(NOISE_LABELS) as NoiseType[]).map((t) => (
-                      <option key={t} value={t}>
-                        {NOISE_LABELS[t]}
-                      </option>
-                    ))}
-                  </select>
+                    套用
+                  </button>
+                </div>
+              </section>
+
+              {/* 聲音 */}
+              <section className="flex flex-col gap-4 rounded-[20px] border-[1.5px] border-line bg-white p-5 sm:p-6">
+                <h2 className="flex items-center gap-2.5 text-lg font-black">
+                  <Icon name="speaker" className="h-[22px] w-[22px]" />
+                  聲音
+                </h2>
+                {soundOn && !audioReady && (
+                  <div
+                    role="status"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border-[1.5px] border-[#f2d27a] bg-[#fef3c7] px-3.5 py-3"
+                  >
+                    <span className="text-sm font-bold text-[#7a3d06]">聲音尚未啟用，請點擊「啟用聲音」。</span>
+                    <button
+                      type="button"
+                      onClick={() => ensureAudio()?.chime()}
+                      className={`${btn.base} bg-[#92400e] text-sm text-white hover:brightness-110`}
+                    >
+                      啟用聲音
+                    </button>
+                  </div>
+                )}
+                <div className="flex min-h-11 items-center justify-between">
+                  <span id="sound-label" className="text-base font-bold">
+                    聲音開／關
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={soundOn}
+                    aria-labelledby="sound-label"
+                    onClick={() => setSoundOn((v) => !v)}
+                    className="relative h-11 w-[60px]"
+                  >
+                    <span className={`absolute left-1 top-[7px] h-[30px] w-[52px] rounded-full transition ${soundOn ? "bg-classroom" : "bg-[#b5ad9f]"}`} />
+                    <span
+                      className={`absolute top-[10px] h-6 w-6 rounded-full bg-white shadow transition-all ${soundOn ? "left-[29px]" : "left-[7px]"}`}
+                    />
+                  </button>
+                </div>
+                <label className="flex items-center gap-3.5 text-base font-bold">
+                  音量
                   <input
                     type="range"
                     min={0}
                     max={1}
-                    step={0.02}
-                    value={noiseLevel}
-                    onChange={(e) => setNoiseLevel(Number(e.target.value))}
-                    className="w-20"
-                    disabled={!noiseOn}
+                    step={0.05}
+                    value={volume}
+                    disabled={!soundOn}
+                    onChange={(e) => setVolume(Number(e.target.value))}
+                    className="h-11 flex-1 accent-classroom"
                   />
-                </div>
-              </div>
+                  <span className="w-12 text-right tabular-nums">{Math.round(volume * 100)}%</span>
+                </label>
 
-              <label className="flex items-center gap-2 py-1.5 text-sm font-medium">
-                <input
-                  type="checkbox"
-                  checked={cueOn}
-                  onChange={(e) => setCueOn(e.target.checked)}
-                  className="h-4 w-4"
-                />
-                上課提示音 / 注意力提示 / 時間到響鈴
-              </label>
+                <button
+                  type="button"
+                  aria-expanded={moreSound}
+                  aria-controls="more-sound"
+                  onClick={() => setMoreSound((v) => !v)}
+                  className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border-[1.5px] border-line bg-[#faf8f4] px-4 py-2 text-left"
+                >
+                  <span className="flex flex-col">
+                    <span className="text-[15px] font-bold">更多聲音設定</span>
+                    <span className="text-[13px] text-muted">白噪音、背景音樂、提示音、時間到鈴聲、試聽</span>
+                  </span>
+                  <Icon name={moreSound ? "chevronUp" : "chevronDown"} className="h-5 w-5 shrink-0" strokeWidth={2.4} />
+                </button>
 
-              <div className="mt-2 flex gap-2">
-                <button
-                  onClick={() => ensureAudio()?.chime()}
-                  className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                >
-                  試聽 上課音
-                </button>
-                <button
-                  onClick={() => ensureAudio()?.attention()}
-                  className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                >
-                  試聽 注意力提示
-                </button>
-              </div>
+                {moreSound && (
+                  <div id="more-sound" className="flex flex-col gap-1 rounded-xl border-[1.5px] border-line p-3.5">
+                    <div className="flex min-h-11 flex-wrap items-center justify-between gap-3">
+                      <label className="flex items-center gap-2.5 text-[15px] font-bold">
+                        <input
+                          type="checkbox"
+                          checked={musicOn}
+                          onChange={(e) => {
+                            ensureAudio();
+                            setMusicOn(e.target.checked);
+                          }}
+                          className="h-5 w-5 accent-classroom"
+                        />
+                        背景音樂（環境音）
+                      </label>
+                      <input
+                        type="range"
+                        aria-label="背景音樂音量"
+                        min={0}
+                        max={1}
+                        step={0.02}
+                        value={musicLevel}
+                        onChange={(e) => setMusicLevel(Number(e.target.value))}
+                        className="h-11 w-32 accent-classroom"
+                        disabled={!musicOn}
+                      />
+                    </div>
+
+                    <div className="flex min-h-11 flex-wrap items-center justify-between gap-3">
+                      <label className="flex items-center gap-2.5 text-[15px] font-bold">
+                        <input
+                          type="checkbox"
+                          checked={noiseOn}
+                          onChange={(e) => {
+                            ensureAudio();
+                            setNoiseOn(e.target.checked);
+                          }}
+                          className="h-5 w-5 accent-classroom"
+                        />
+                        白噪音
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <select
+                          aria-label="白噪音種類"
+                          value={noiseType}
+                          onChange={(e) => setNoiseType(e.target.value as NoiseType)}
+                          disabled={!noiseOn}
+                          className="min-h-11 rounded-lg border-[1.5px] border-line-strong bg-white px-2 text-sm"
+                        >
+                          {(Object.keys(NOISE_LABELS) as NoiseType[]).map((t) => (
+                            <option key={t} value={t}>
+                              {NOISE_LABELS[t]}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="range"
+                          aria-label="白噪音音量"
+                          min={0}
+                          max={1}
+                          step={0.02}
+                          value={noiseLevel}
+                          onChange={(e) => setNoiseLevel(Number(e.target.value))}
+                          className="h-11 w-24 accent-classroom"
+                          disabled={!noiseOn}
+                        />
+                      </div>
+                    </div>
+
+                    <label className="flex min-h-11 items-center gap-2.5 text-[15px] font-bold">
+                      <input
+                        type="checkbox"
+                        checked={cueOn}
+                        onChange={(e) => setCueOn(e.target.checked)}
+                        className="h-5 w-5 accent-classroom"
+                      />
+                      上課提示音、注意力提示、時間到鈴聲
+                    </label>
+
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      <button type="button" onClick={() => ensureAudio()?.chime()} className={`${btn.base} ${btn.secondary} text-sm`}>
+                        試聽上課音
+                      </button>
+                      <button type="button" onClick={() => ensureAudio()?.attention()} className={`${btn.base} ${btn.secondary} text-sm`}>
+                        試聽注意力提示
+                      </button>
+                      <button type="button" onClick={() => ensureAudio()?.alarm()} className={`${btn.base} ${btn.secondary} text-sm`}>
+                        試聽時間到
+                      </button>
+                    </div>
+                    <p className="mt-1 text-[13px] text-muted">背景音樂與白噪音都是即時合成，不是音檔。</p>
+                  </div>
+                )}
+              </section>
             </div>
-          </div>
 
-          <p className="text-xs text-zinc-400">
-            提示：背景音樂與白噪音皆為即時合成，非音檔。第一次開聲音若瀏覽器擋住，再點一次即可。
-          </p>
-        </div>
+            <p className="hidden flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted md:flex">
+              <Icon name="keyboard" className="h-5 w-5" />
+              {shortcuts()}
+            </p>
+          </main>
+        </>
       )}
     </div>
   );

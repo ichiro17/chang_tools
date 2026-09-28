@@ -1,255 +1,195 @@
 import Link from "next/link";
+import { Icon, type IconName } from "@/app/components/Icon";
+import { Logo, TOOLS, btn, type ToolKey } from "@/app/components/ToolHeader";
 
-type Tool = {
-  emoji: string;
-  title: string;
-  subtitle: string;
-  href: string;
-  anchor: string;
-  desc: string;
-  features: string[];
-  color: string;
-  tint: string;
-};
+/** 首頁四個大入口：用「我要做什麼」來找工具。 */
+const TASKS: { tool: ToolKey; href: string; task: string; hint: string; short: string }[] = [
+  { tool: "draw", href: "/draw", task: "我要抽籤", hint: "點名、分組、抽獎都能用", short: "點名、分組、抽獎" },
+  { tool: "timer", href: "/timer", task: "我要計時", hint: "投影現在時間、節次與考程", short: "課堂流程、考試考程" },
+  { tool: "classroom", href: "/classroom", task: "我要開始課堂模式", hint: "安靜作業、小組討論，一鍵投影指令", short: "投影課堂指令與倒數" },
+  { tool: "countdown", href: "/countdown", task: "我要看放假倒數", hint: "離寒暑假還有幾天、還要上幾天班", short: "寒暑假倒數與工作量" },
+];
 
-const TOOLS: Tool[] = [
+const FEATURES: { icon: IconName; title: string; desc: string }[] = [
+  { icon: "noLogin", title: "不用登入", desc: "打開網址就能用，不必註冊帳號。" },
+  { icon: "lock", title: "不會上傳學生名單", desc: "名單只在你的瀏覽器裡處理。" },
+  { icon: "drive", title: "設定保存在這台裝置", desc: "下次打開，課表和名單都還在。" },
+  { icon: "maximize", title: "支援全螢幕投影", desc: "控制台和投影畫面分開，學生只看到重點。" },
+  { icon: "devices", title: "手機、平板、電腦都能用", desc: "在手機上設定，投影用電腦。" },
+];
+
+/** 工具介紹：加上「適合什麼時候用」。 */
+const DETAILS: { tool: ToolKey; href: string; scene: string; desc: string; features: string[]; cta: string }[] = [
   {
-    emoji: "🎡",
-    title: "抽籤轉盤",
-    subtitle: "點名 · 分組 · 抽獎",
+    tool: "draw",
     href: "/draw",
-    anchor: "draw",
-    desc: "貼上一份名單，轉盤就會隨機抽人。想一次抽幾位都行，抽中的人自動從轉盤移除，不會重複抽到同一個。",
-    features: [
-      "支援換行、逗號、頓號分隔名單",
-      "一次抽 1 位或多位",
-      "抽中自動移除，可再放回",
-      "中獎名單依輪次記錄",
-    ],
-    color: "#e11d48",
-    tint: "rgba(225,29,72,0.12)",
+    scene: "點名、分組、抽獎都能用",
+    desc: "適合課堂點名、分組活動與課堂小獎勵。抽中的名字會用大字顯示，全班都看得清楚。",
+    features: ["貼上名單就好，自動去除空白、提醒重複", "每人機率相同，同一輪不會重複抽到", "依順序記錄抽中名單，可隨時放回"],
+    cta: "開始抽籤",
   },
   {
-    emoji: "🕐",
-    title: "課堂時鐘 / 考程",
-    subtitle: "現在時間 · 課表 · 考試",
+    tool: "timer",
     href: "/timer",
-    anchor: "timer",
-    desc: "投影幕上顯示現在時間，並依你排好的課堂流程或考程，自動秀出「現在進行的項目」和剩餘時間。考完的科目會自動消失。",
-    features: [
-      "翻頁時鐘 + 進度條",
-      "自訂課堂流程與考程時刻",
-      "進行中項目自動切換",
-      "資料存在本機，全螢幕投影",
-    ],
-    color: "#4f46e5",
-    tint: "rgba(79,70,229,0.12)",
+    scene: "適合投影到教室前方",
+    desc: "學生可以直接看到目前進度與剩餘時間。老師在控制台編課表，投影畫面只顯示重點。",
+    features: ["課堂流程與考試考程兩種模式", "時間重疊、填反會立刻提醒", "內建國小、國中課表與段考範例"],
+    cta: "開始計時",
   },
   {
-    emoji: "🏫",
-    title: "課堂模式",
-    subtitle: "投影指令 · 倒數 · 環境音",
+    tool: "classroom",
     href: "/classroom",
-    anchor: "classroom",
-    desc: "按一個按鈕，投影幕就切成清楚的課堂指令：安靜作業、小組討論、看老師⋯⋯搭配倒數、背景音樂、白噪音與提示音。",
-    features: [
-      "五種課堂模式一鍵切換",
-      "內建倒數與時間到響鈴",
-      "背景音樂 / 白噪音即時合成",
-      "全螢幕投影 + 鍵盤快捷鍵",
-    ],
-    color: "#059669",
-    tint: "rgba(5,150,105,0.12)",
+    scene: "一個按鍵切換課堂指令",
+    desc: "安靜作業、小組討論、看老師⋯⋯投影幕直接顯示現在要做什麼，搭配倒數與環境音。",
+    features: ["五種模式，數字鍵 1–5 切換", "內建倒數與時間到鈴聲", "白噪音、背景音樂即時合成"],
+    cta: "開始課堂模式",
   },
   {
-    emoji: "🏖️",
-    title: "撐到放假",
-    subtitle: "寒暑假倒數 · 教師工作量",
+    tool: "countdown",
     href: "/countdown",
-    anchor: "countdown",
-    desc: "距離寒假、暑假還有幾天幾時幾分？扣掉週末、國定假日和你自己的快樂假日，算出真正還要上幾天班。",
-    features: [
-      "寒假 / 暑假目標一鍵切換",
-      "內建 115 學年度行事曆與國定假日",
-      "自訂學期日期、每日工時",
-      "加入校慶補休等自訂假日",
-    ],
-    color: "#c96b4a",
-    tint: "rgba(201,107,74,0.14)",
+    scene: "看得到倒數，也看得到走了多遠",
+    desc: "寒暑假倒數到秒，扣掉週末與國定假日，算出真正還要上幾天班、幾小時。",
+    features: ["內建 115 學年度行事曆（可自行修改）", "加入校慶補休等自訂假日", "顯示下一個平日放假"],
+    cta: "看放假倒數",
   },
 ];
 
 export default function Home() {
   return (
-    <>
-      <header className="sticky top-0 z-50 border-b border-zinc-200/70 bg-white/80 backdrop-blur-md dark:border-zinc-800/70 dark:bg-zinc-950/80">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3.5">
-          <a
-            href="#top"
-            className="flex items-center gap-2 font-bold tracking-tight text-zinc-900 dark:text-zinc-50"
-          >
-            <span className="text-xl">🧰</span>
-            小張的小工具箱
-          </a>
-          <nav className="hidden gap-1 sm:flex">
-            {TOOLS.map((t) => (
-              <a
-                key={t.anchor}
-                href={`#${t.anchor}`}
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+    <div className="flex min-h-screen flex-col bg-paper text-ink">
+      <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:h-[72px] sm:px-6">
+          <Logo />
+          <nav aria-label="工具" className="hidden gap-1 md:flex">
+            {TASKS.map((t) => (
+              <Link
+                key={t.tool}
+                href={t.href}
+                className="rounded-xl px-3.5 py-3 text-[15px] font-bold text-muted hover:bg-paper hover:text-ink"
               >
-                {t.title}
-              </a>
+                {TOOLS[t.tool].name}
+              </Link>
             ))}
           </nav>
         </div>
       </header>
 
-      <main className="flex-1 bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-        {/* Hero */}
-        <section
-          id="top"
-          className="relative overflow-hidden border-b border-zinc-200/70 dark:border-zinc-800/70"
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 -z-10 text-zinc-400/40 dark:text-zinc-600/30"
-            style={{
-              backgroundImage:
-                "radial-gradient(currentColor 1px, transparent 1px)",
-              backgroundSize: "22px 22px",
-              maskImage:
-                "radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent)",
-              WebkitMaskImage:
-                "radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent)",
-            }}
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -top-32 left-1/2 -z-10 h-80 w-[36rem] max-w-full -translate-x-1/2 rounded-full bg-gradient-to-br from-indigo-400/25 via-fuchsia-400/20 to-emerald-400/25 blur-3xl"
-          />
-
-          <div className="mx-auto max-w-5xl px-5 py-20 text-center sm:py-28">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-white/70 px-3 py-1 text-xs font-semibold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300">
-              👋 給老師的課堂小工具
-            </span>
-            <h1 className="mt-5 text-4xl font-black tracking-tight sm:text-6xl">
-              小張的
-              <span className="bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-emerald-500 bg-clip-text text-transparent">
-                小工具箱
-              </span>
-            </h1>
-            <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-              四個上課會用到的小工具，打開就能用 —— 免登入、免安裝。
-              點名抽籤、課堂時鐘、投影指令、放假倒數，一個網站搞定。
-            </p>
-            <div className="mt-9 flex flex-wrap justify-center gap-3">
-              <a
-                href="#tools"
-                className="rounded-xl bg-zinc-900 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-              >
-                看看有哪些工具 ↓
+      <main className="flex-1">
+        {/* 第一屏：標題＋四個任務入口 */}
+        <section className="mx-auto flex max-w-6xl flex-col gap-8 px-4 pb-14 pt-8 sm:gap-10 sm:px-6 sm:pt-14">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex max-w-2xl flex-col gap-3">
+              <h1 className="text-[30px] font-black leading-tight sm:text-5xl">
+                老師上課馬上用的 4 個小工具
+              </h1>
+              <p className="text-base leading-7 text-muted sm:text-lg">
+                抽籤、計時、投影指令、放假倒數，免登入，打開就能使用。
+              </p>
+            </div>
+            <div className="hidden shrink-0 gap-3 sm:flex">
+              <a href="#tools" className={`${btn.base} ${btn.secondary} min-h-[52px] px-5 text-base`}>
+                選擇工具
               </a>
-              <Link
-                href="/timer"
-                className="rounded-xl border border-zinc-300 bg-white px-6 py-3 text-sm font-bold text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-              >
-                直接開課堂時鐘
+              <Link href="/timer" className={`${btn.base} min-h-[52px] bg-timer px-5 text-base text-white hover:brightness-110`}>
+                <Icon name="clock" className="h-5 w-5" strokeWidth={2.2} />
+                最常用：開始課堂時鐘
               </Link>
             </div>
           </div>
-        </section>
 
-        {/* Tools */}
-        <section id="tools" className="mx-auto max-w-5xl scroll-mt-20 px-5 py-16 sm:py-20">
-          <div className="text-center">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
-              工具
-            </h2>
-            <p className="mt-2 text-2xl font-bold sm:text-3xl">
-              四個工具，涵蓋一堂課的大小事
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
-            {TOOLS.map((t) => (
-              <article
-                key={t.anchor}
-                id={t.anchor}
-                className="group relative flex scroll-mt-20 flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
-              >
-                <div
-                  aria-hidden
-                  className="absolute inset-x-0 top-0 h-1"
-                  style={{ background: t.color }}
-                />
-                <div
-                  className="flex h-14 w-14 items-center justify-center rounded-2xl text-3xl"
-                  style={{ background: t.tint }}
-                >
-                  {t.emoji}
-                </div>
-                <h3 className="mt-5 text-lg font-bold">{t.title}</h3>
-                <p
-                  className="mt-1 text-xs font-semibold uppercase tracking-wide"
-                  style={{ color: t.color }}
-                >
-                  {t.subtitle}
-                </p>
-                <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                  {t.desc}
-                </p>
-                <ul className="mt-4 flex flex-col gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                  {t.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <span
-                        aria-hidden
-                        className="mt-0.5 font-bold"
-                        style={{ color: t.color }}
-                      >
-                        ✓
-                      </span>
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
+          <nav aria-label="選擇工具" className="grid gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+            {TASKS.map((t) => {
+              const c = TOOLS[t.tool];
+              return (
                 <Link
+                  key={t.tool}
                   href={t.href}
-                  className="mt-6 inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-[0.98]"
-                  style={{ background: t.color }}
+                  className="group flex items-center gap-4 rounded-[20px] border-[1.5px] border-line bg-white p-4 transition hover:-translate-y-0.5 hover:border-line-strong hover:shadow-lg sm:min-h-[232px] sm:flex-col sm:items-start sm:rounded-3xl sm:p-7"
                 >
-                  打開{t.title}
-                  <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
-                    →
+                  <span className={`flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl sm:h-[60px] sm:w-[60px] ${c.tint} ${c.text}`}>
+                    <Icon name={c.icon} className="h-7 w-7 sm:h-8 sm:w-8" />
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:gap-2">
+                    <span className="text-[19px] font-black sm:text-[26px] sm:leading-tight">{t.task}</span>
+                    <span className="text-sm text-muted sm:hidden">{t.short}</span>
+                    <span className="hidden text-[15px] leading-6 text-muted sm:block">{t.hint}</span>
+                  </span>
+                  <Icon name="chevronRight" className={`h-[22px] w-[22px] shrink-0 sm:hidden ${c.text}`} strokeWidth={2.4} />
+                  <span className={`hidden text-[15px] font-bold sm:block ${c.text}`}>
+                    開始使用 <span className="inline-block transition group-hover:translate-x-0.5">→</span>
                   </span>
                 </Link>
-              </article>
-            ))}
+              );
+            })}
+          </nav>
+        </section>
+
+        {/* 特色：建立信任 */}
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <section className="flex flex-col gap-5 rounded-[20px] bg-ink px-5 py-6 text-white sm:rounded-3xl sm:px-10 sm:py-9">
+            <h2 className="text-lg font-black sm:text-[22px]">這個網站的特色</h2>
+            <ul className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-5">
+              {FEATURES.map((f) => (
+                <li key={f.title} className="flex items-center gap-3 sm:flex-col sm:items-start sm:gap-2.5">
+                  <Icon name={f.icon} className="h-[22px] w-[22px] shrink-0 text-[#f3d9a8] sm:h-7 sm:w-7" />
+                  <span className="text-[15px] font-bold sm:text-[17px]">{f.title}</span>
+                  <span className="hidden text-sm leading-6 text-[#d6d0c5] sm:block">{f.desc}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+
+        {/* 工具介紹 */}
+        <section id="tools" className="mx-auto flex max-w-6xl scroll-mt-24 flex-col gap-7 px-4 py-14 sm:px-6 sm:py-18">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-2xl font-black sm:text-[32px]">每個工具適合什麼時候用</h2>
+            <p className="text-base text-muted">挑一個符合你現在情境的工具就好。</p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-2 md:gap-6">
+            {DETAILS.map((d) => {
+              const c = TOOLS[d.tool];
+              return (
+                <article
+                  key={d.tool}
+                  id={d.tool}
+                  className="flex scroll-mt-24 flex-col gap-4 rounded-3xl border-[1.5px] border-line bg-white p-6 sm:p-8"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <span className={`flex h-12 w-12 items-center justify-center rounded-[14px] ${c.tint} ${c.text}`}>
+                      <Icon name={c.icon} className="h-[26px] w-[26px]" />
+                    </span>
+                    <h3 className="text-2xl font-black">{c.name}</h3>
+                  </div>
+                  <p className={`text-lg font-bold ${c.text}`}>{d.scene}</p>
+                  <p className="text-[15px] leading-7 text-muted">{d.desc}</p>
+                  <ul className="flex flex-col gap-2 text-[15px]">
+                    {d.features.map((f) => (
+                      <li key={f} className="flex items-center gap-2.5">
+                        <Icon name="check" className={`h-[18px] w-[18px] shrink-0 ${c.text}`} strokeWidth={2.6} />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href={d.href} className={`${btn.base} mt-1 self-start px-5 text-base text-white hover:brightness-110 ${c.bg}`}>
+                    {d.cta}
+                  </Link>
+                </article>
+              );
+            })}
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-5 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
-          <div className="flex items-center gap-2 font-bold text-zinc-900 dark:text-zinc-50">
-            <span className="text-lg">🧰</span> 小張的小工具箱
-          </div>
-          <nav className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm text-zinc-500 dark:text-zinc-400">
-            {TOOLS.map((t) => (
-              <Link
-                key={t.anchor}
-                href={t.href}
-                className="transition hover:text-zinc-900 dark:hover:text-zinc-100"
-              >
-                {t.title}
-              </Link>
-            ))}
-          </nav>
-          <p className="text-xs text-zinc-400">
-            © {new Date().getFullYear()} 小張 · 用 Next.js 打造
-          </p>
+      <footer className="border-t border-line bg-white">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-8">
+          <span className="flex items-center gap-2">
+            <Icon name="lock" className="h-[18px] w-[18px] shrink-0" />
+            所有設定只會儲存在這台裝置的瀏覽器，不會上傳到雲端。
+          </span>
+          <span>© {new Date().getFullYear()} 小張的小工具箱</span>
         </div>
       </footer>
-    </>
+    </div>
   );
 }

@@ -13,7 +13,7 @@ import {
   SkyDecor,
 } from "./art";
 import { type SheetSection, SettingsSheet } from "./SettingsSheet";
-import { CalcNote, DataInfo, MilestonesCard, SimulatorCard, StagesCard, TodayCard } from "./sections";
+import { CalcNote, DataInfo, MilestonesCard, StagesCard, TodayCard } from "./sections";
 import { Chip, TARGETS, TargetToggle, fmtMD } from "./ui";
 
 const LS_KEY = "chang-tools:countdown:settings";
@@ -243,7 +243,6 @@ export default function CountdownPage() {
           <StagesCard now={now} s={s} mounted={mounted} onAddEvent={() => openAt("events")} />
         </div>
 
-        <SimulatorCard now={now} s={s} update={update} />
         <MilestonesCard now={now} s={s} mounted={mounted} />
 
         <DataInfo s={s} />

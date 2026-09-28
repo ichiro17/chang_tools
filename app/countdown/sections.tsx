@@ -7,17 +7,13 @@ import {
   type Milestone,
   type MilestoneKind,
   type Settings,
-  addDays,
   daysBetween,
   dayOff,
   milestones,
   quoteFor,
   stages,
   startOfDay,
-  targetDate,
-  toYmd,
   usesDefaultDates,
-  workload,
 } from "./calendar";
 import { Card, Chip, TARGETS, fmtMD } from "./ui";
 
@@ -144,162 +140,6 @@ export function StagesCard({
         <Icon name="plus" className="h-[18px] w-[18px]" strokeWidth={2.4} />
         新增倒數事件（段考、校慶、發薪日）
       </button>
-    </Card>
-  );
-}
-
-type ScenarioKey = "leave" | "comp" | "closure" | "makeup" | "shorter";
-
-const SCENARIOS: { key: ScenarioKey; label: string; tag: string; kind: "off" | "work" | null }[] = [
-  { key: "leave", label: "請一天假", tag: "請假", kind: "off" },
-  { key: "comp", label: "多一天補休", tag: "補休", kind: "off" },
-  { key: "closure", label: "學校臨時放假", tag: "臨時放假", kind: "off" },
-  { key: "makeup", label: "多一天補課", tag: "補課", kind: "work" },
-  { key: "shorter", label: "每天少算 1 小時", tag: "", kind: null },
-];
-
-/** 「如果今天請假」模擬器：先試算，確定了再一鍵加進行事曆。 */
-export function SimulatorCard({
-  now,
-  s,
-  update,
-}: {
-  now: Date;
-  s: Settings;
-  update: (patch: Partial<Settings>) => void;
-}) {
-  const [key, setKey] = useState<ScenarioKey>("leave");
-  const [dateText, setDateText] = useState("");
-  const [done, setDone] = useState("");
-  const sc = SCENARIOS.find((x) => x.key === key)!;
-  const t0 = startOfDay(now);
-  const target = targetDate(s);
-  const name = TARGETS.find((t) => t.key === s.target)!.name;
-
-  // 預設日期：請假類挑下一個要上班的日子，補課挑下一個不用上班的日子
-  const defaultDate = (() => {
-    for (let d = addDays(t0, 1); d.getTime() < target.getTime(); d = addDays(d, 1)) {
-      const off = dayOff(d, s) != null;
-      if (sc.kind === "work" ? off : !off) return toYmd(d);
-    }
-    return toYmd(addDays(t0, 1));
-  })();
-  const date = dateText || defaultDate;
-
-  const d = new Date(`${date}T00:00`);
-  const inRange = !Number.isNaN(d.getTime()) && d.getTime() >= t0.getTime() && d.getTime() < target.getTime();
-  const next: Settings = sc.kind
-    ? { ...s, custom: [...s.custom.filter((c) => c.date !== date), { date, label: sc.tag, kind: sc.kind }] }
-    : { ...s, hoursPerDay: Math.max(1, s.hoursPerDay - 1) };
-  const before = workload(now, s);
-  const after = workload(now, next);
-  const dDays = after.days - before.days;
-  const dHours = after.hours - before.hours;
-  const sign = (n: number) => (n > 0 ? `+${n}` : `${n}`);
-
-  const noChange = sc.kind && inRange && dDays === 0;
-  const canApply = sc.kind ? inRange && dDays !== 0 : s.hoursPerDay > 1;
-
-  return (
-    <Card>
-      <div>
-        <Chip icon={chipIcon("lab")}>如果⋯會怎樣？</Chip>
-      </div>
-      <p className="-mt-1 text-[15px] font-bold text-[#6f685e]">先試算看看，不會改到你的設定。</p>
-
-      <div role="radiogroup" aria-label="情境" className="flex flex-wrap gap-2">
-        {SCENARIOS.map((x) => (
-          <button
-            key={x.key}
-            type="button"
-            role="radio"
-            aria-checked={key === x.key}
-            onClick={() => {
-              setKey(x.key);
-              setDateText("");
-              setDone("");
-            }}
-            className={`min-h-11 rounded-full px-4 text-[15px] font-bold ${
-              key === x.key ? "bg-[#3d3935] text-white" : "border border-[#e3dccd] bg-white text-[#3d3935] hover:bg-[#f3eee4]"
-            }`}
-          >
-            {x.label}
-          </button>
-        ))}
-      </div>
-
-      {sc.kind && (
-        <label className="flex flex-col gap-2 min-[480px]:flex-row min-[480px]:items-center">
-          <span className="text-[15px] font-bold">哪一天？</span>
-          <input
-            type="date"
-            value={date}
-            min={toYmd(t0)}
-            onChange={(e) => {
-              setDateText(e.target.value);
-              setDone("");
-            }}
-            className="min-h-12 rounded-2xl border border-[#e3dccd] bg-white px-4 text-base outline-none focus:border-[#3f7a94]"
-          />
-        </label>
-      )}
-
-      {sc.kind && !inRange ? (
-        <p className="rounded-2xl bg-white px-4 py-3 text-[15px] font-bold text-[#9a4424]">
-          這一天不在倒數範圍內（今天到{name}前一天）。
-        </p>
-      ) : (
-        <dl className="grid grid-cols-2 gap-3">
-          {(
-            [
-              ["剩餘工作日", before.days, after.days, dDays, "天"],
-              ["剩餘工時", before.hours, after.hours, dHours, "小時"],
-            ] as const
-          ).map(([label, b, a, diff, unit]) => (
-            <div key={label} className="flex flex-col gap-1 rounded-2xl bg-white px-4 py-3">
-              <dt className="text-sm font-bold text-[#6f685e]">{label}</dt>
-              <dd className="flex flex-wrap items-baseline gap-x-2 font-black tabular-nums">
-                <span className="text-base text-[#6f685e] line-through decoration-2">{b.toLocaleString()}</span>
-                <span aria-hidden>→</span>
-                <span className="text-3xl">{a.toLocaleString()}</span>
-                <span className="text-sm">{unit}</span>
-                {diff !== 0 && (
-                  <span className={`text-sm ${diff < 0 ? "text-[#065f46]" : "text-[#9a4424]"}`}>（{sign(diff)}）</span>
-                )}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      )}
-
-      {noChange && (
-        <p className="text-[15px] font-bold text-[#6f685e]">
-          {sc.kind === "work" ? "那天本來就要上班，所以沒有變化。" : "那天本來就不用上班，所以沒有變化。"}
-        </p>
-      )}
-
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          disabled={!canApply}
-          onClick={() => {
-            if (sc.kind) {
-              update({ custom: next.custom.sort((a, b) => a.date.localeCompare(b.date)) });
-              setDone(`已把 ${fmtMD(d)} ${sc.tag}加進你的學校行事曆。`);
-            } else {
-              update({ hoursPerDay: next.hoursPerDay });
-              setDone(`每日工時已改成 ${next.hoursPerDay} 小時。`);
-            }
-          }}
-          className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-[#3d3935] px-5 text-base font-bold text-white hover:bg-[#2a2724] disabled:opacity-40"
-        >
-          <Icon name="check" className="h-5 w-5" strokeWidth={2.6} />
-          {sc.kind ? "加入我的學校行事曆" : `把每日工時改成 ${Math.max(1, s.hoursPerDay - 1)} 小時`}
-        </button>
-        <span role="status" className="text-[15px] font-bold text-[#065f46]">
-          {done}
-        </span>
-      </div>
     </Card>
   );
 }

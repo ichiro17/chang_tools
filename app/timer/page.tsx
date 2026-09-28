@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Icon } from "@/app/components/Icon";
 import { PrivacyNote, ToolHeader, btn } from "@/app/components/ToolHeader";
 import { Board } from "./Board";
+import { SavedSchedules } from "./SavedSchedules";
 import {
   type Issue,
   KIND_INFO,
@@ -387,6 +388,15 @@ export default function TimerPage() {
               全螢幕。這裡改的課表會自動同步過去。
             </p>
           </section>
+
+          <SavedSchedules
+            kind={mode}
+            rows={rows}
+            load={(k, r) => {
+              setRows(k, () => r);
+              setMode(k);
+            }}
+          />
         </div>
 
         <div className="flex flex-col gap-4">

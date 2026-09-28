@@ -256,3 +256,100 @@ export function useNow() {
   }, []);
   return now;
 }
+
+/** 老師自己存的一份課表，例如「五年級自然課」「段考第一天」。 */
+export type Saved = { id: string; name: string; kind: Kind; rows: Row[] };
+
+const LS_SAVED = "chang-tools:timer:saved";
+
+/** 多組課表：存在本機，可以隨時載入。 */
+export function useSavedSchedules() {
+  const [saved, setSaved] = useState<Saved[]>([]);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_SAVED);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (raw) setSaved(JSON.parse(raw) as Saved[]);
+    } catch {
+      /* 壞掉的資料就當作沒有 */
+    }
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return;
+    try {
+      localStorage.setItem(LS_SAVED, JSON.stringify(saved));
+    } catch {
+      /* 儲存空間不可用時略過 */
+    }
+  }, [saved, ready]);
+
+  /** 同一個模式下同名的課表直接覆蓋，回傳是不是更新舊的 */
+  const save = useCallback(
+    (name: string, kind: Kind, rows: Row[]) => {
+      const exists = saved.some((x) => x.name === name && x.kind === kind);
+      setSaved((prev) => {
+        const i = prev.findIndex((x) => x.name === name && x.kind === kind);
+        const item = { id: i >= 0 ? prev[i].id : uid(), name, kind, rows };
+        return i >= 0 ? prev.map((x, j) => (j === i ? item : x)) : [...prev, item];
+      });
+      return exists;
+    },
+    [saved],
+  );
+
+  const remove = useCallback((id: string) => setSaved((prev) => prev.filter((x) => x.id !== id)), []);
+
+  return { saved, save, remove };
+}
+
+const EXPORT_TYPE = "chang-tools/timer-schedule";
+
+/** 匯出成 JSON 檔（換電腦、換教室時帶著走）。 */
+export function downloadSchedule(name: string, kind: Kind, rows: Row[]) {
+  const data = {
+    type: EXPORT_TYPE,
+    version: 1,
+    name,
+    kind,
+    rows: rows.map(({ label, start, end }) => ({ label, start, end })),
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `課表-${name || KIND_INFO[kind].name}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/** 讀取匯出的課表檔；格式不對回傳錯誤訊息。 */
+export function parseScheduleFile(text: string): { name: string; kind: Kind; rows: Row[] } | { error: string } {
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return { error: "這不是課表檔案（無法讀取 JSON）。" };
+  }
+  const d = data as { type?: unknown; name?: unknown; kind?: unknown; rows?: unknown };
+  if (d?.type !== EXPORT_TYPE || !Array.isArray(d.rows)) {
+    return { error: "這不是小工具箱匯出的課表檔案。" };
+  }
+  const rows = d.rows
+    .filter((r): r is Record<string, unknown> => typeof r === "object" && r != null)
+    .map((r) => ({
+      id: uid(),
+      label: String(r.label ?? ""),
+      start: String(r.start ?? ""),
+      end: String(r.end ?? ""),
+    }));
+  if (rows.length === 0) return { error: "檔案裡沒有任何課程。" };
+  return {
+    name: typeof d.name === "string" ? d.name : "",
+    kind: d.kind === "exam" ? "exam" : "class",
+    rows,
+  };
+}

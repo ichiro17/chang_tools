@@ -90,10 +90,12 @@ export function ToolHeader({ tool, actions }: { tool: ToolKey; actions?: ReactNo
           </h1>
         </div>
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          <Link href="/" className={`${btn.base} ${btn.secondary} hidden sm:inline-flex`}>
-            <Icon name="arrowLeft" className="h-[18px] w-[18px]" strokeWidth={2.2} />
-            返回首頁
-          </Link>
+          <span className="hidden sm:contents">
+            <Link href="/" className={`${btn.base} ${btn.secondary}`}>
+              <Icon name="arrowLeft" className="h-[18px] w-[18px]" strokeWidth={2.2} />
+              返回首頁
+            </Link>
+          </span>
           {actions}
         </div>
       </div>

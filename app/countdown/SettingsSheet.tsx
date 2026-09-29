@@ -2,6 +2,7 @@
 
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Icon } from "@/app/components/Icon";
+import { CalendarImport } from "./CalendarImport";
 import { type CustomDay, DATA_INFO, DEFAULT_SETTINGS, type Settings, parseYmd } from "./calendar";
 import { TargetToggle } from "./ui";
 
@@ -271,6 +272,8 @@ export function SettingsSheet({
               ))}
             </ul>
           )}
+
+          <CalendarImport s={s} update={update} />
 
           <SectionTitle
             id="sheet-events"

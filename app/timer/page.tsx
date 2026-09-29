@@ -401,7 +401,7 @@ export default function TimerPage() {
 
         <div className="flex flex-col gap-4">
           <Editor kind={mode} rows={rows} setRows={(fn) => setRows(mode, fn)} applyTemplate={applyTemplate} now={now} />
-          <PrivacyNote>課表只會儲存在這台裝置的瀏覽器，不會上傳到雲端。</PrivacyNote>
+          <PrivacyNote>課表只會儲存在這台裝置的瀏覽器，不會上傳到雲端；要換電腦，可以用「我的課表」的匯出功能帶走。</PrivacyNote>
         </div>
       </main>
     </div>

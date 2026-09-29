@@ -35,7 +35,7 @@ export function Board({
     >
       <div className="flex items-center justify-between gap-[2cqw] font-bold text-[#e7e2d9]" style={{ fontSize: "3.2cqh" }}>
         <span>{mounted ? `${fmtDate(now)} · ${info.name}` : info.name}</span>
-        <FlipClock text={mounted ? fmtClock(now, showSec) : showSec ? "--:--:--" : "--:--"} fontSize="5.5cqh" />
+        <FlipClock text={mounted ? fmtClock(now, showSec) : showSec ? "--:--:--" : "--:--"} fontSize="min(5.5cqh, 6cqw)" />
       </div>
 
       <div className="flex flex-1 flex-col justify-center" style={{ gap: "2.4cqh" }}>

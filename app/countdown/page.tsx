@@ -205,7 +205,7 @@ export default function CountdownPage() {
     const prev = document.title;
     const name = TARGETS.find((t) => t.key === s.target)!.name;
     const days = Math.max(0, Math.floor((targetDate(s).getTime() - now.getTime()) / 86_400_000));
-    document.title = mounted ? `${name}還有 ${days} 天 · 撐到放假` : "撐到放假";
+    document.title = mounted ? `${name}還有 ${days} 天 · 放假倒數` : "放假倒數";
     return () => {
       document.title = prev;
     };
@@ -227,7 +227,7 @@ export default function CountdownPage() {
         }
       />
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-8">
-        <p className="text-sm font-semibold text-muted">寒暑假倒數，順便算算真正還要上幾天班</p>
+        <p className="text-sm font-semibold text-muted">撐到放假！寒暑假倒數，順便算算真正還要上幾天班</p>
 
         <div className="sm:ml-auto sm:w-[40rem] sm:max-w-full">
           <TargetToggle value={s.target} onChange={(t) => update({ target: t })} />

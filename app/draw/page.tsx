@@ -567,7 +567,7 @@ export default function DrawPage() {
               </div>
             </div>
 
-            <PrivacyNote>名單只會儲存在這台裝置的瀏覽器，不會上傳到雲端。</PrivacyNote>
+            <PrivacyNote>名單只會儲存在這台裝置的瀏覽器，不會上傳到雲端；換裝置或清除瀏覽器資料後需要重新貼上。</PrivacyNote>
           </main>
         </>
       )}

@@ -34,7 +34,7 @@ export const TOOLS: Record<
     border: "border-classroom",
   },
   countdown: {
-    name: "撐到放假",
+    name: "放假倒數",
     icon: "parasol",
     text: "text-countdown",
     bg: "bg-countdown",
@@ -52,7 +52,7 @@ export const btn = {
 
 export function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-2.5 font-black text-ink">
+    <Link href="/" className="flex min-h-11 items-center gap-2.5 rounded-xl font-black text-ink">
       <span className="flex h-[34px] w-[34px] items-center justify-center rounded-[10px] bg-ink text-white">
         <Icon name="toolbox" className="h-5 w-5" />
       </span>
@@ -108,7 +108,7 @@ export function PrivacyNote({ children }: { children?: ReactNode }) {
   return (
     <p className="flex items-center gap-2 text-[13px] text-muted">
       <Icon name="lock" className="h-4 w-4 shrink-0" />
-      {children ?? "設定只會儲存在這台裝置的瀏覽器，不會上傳到雲端。"}
+      {children ?? "設定只會儲存在這台裝置的瀏覽器，不會上傳到雲端；換裝置或清除瀏覽器資料後需要重新設定。"}
     </p>
   );
 }

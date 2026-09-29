@@ -246,7 +246,7 @@ export function CalcNote({ s }: { s: Settings }) {
 
   return (
     <details className="group relative rounded-2xl border border-[#ebe4d6] bg-white px-4 py-3 text-sm text-[#5f594f]">
-      <summary className="flex min-h-6 cursor-pointer list-none items-center justify-between gap-2 font-bold text-[#3d3935]">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 font-bold text-[#3d3935]">
         計算方式
         <Icon name="chevronDown" className="h-4 w-4 transition group-open:rotate-180" strokeWidth={2.4} />
       </summary>

@@ -1,4 +1,4 @@
-/** 撐到放假各區塊共用的小元件與文字。 */
+/** 放假倒數各區塊共用的小元件與文字。 */
 
 import type { ReactNode } from "react";
 import type { Target } from "./calendar";

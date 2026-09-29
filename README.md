@@ -41,7 +41,7 @@
 - 聲音設定預設只顯示開關與音量，白噪音、背景音樂等收在「更多聲音設定」
 - 「開始全螢幕投影」或「開啟投影預覽」，投影畫面有可隱藏的快捷鍵提示
 
-### 🏖️ 撐到放假 · `/countdown`
+### 🏖️ 放假倒數 · `/countdown`
 
 寒假 / 暑假倒數，再算算扣掉週末與假日後，真正還要上幾天班、幾小時。
 
@@ -97,7 +97,7 @@ app/
 │   ├── SavedSchedules.tsx 我的課表、匯入／匯出
 │   └── schedule.ts     課表資料、時間檢查、分頁同步
 ├── classroom/          課堂模式（page.tsx + audio.ts 音訊引擎）
-├── countdown/          撐到放假
+├── countdown/          放假倒數
 │   ├── page.tsx        倒數與工作量卡片
 │   ├── sections.tsx    今天、小目標、里程碑、計算方式
 │   ├── SettingsSheet.tsx 教師手帳設定

@@ -3,8 +3,15 @@ import { Icon, type IconName } from "@/app/components/Icon";
 import { Logo, TOOLS, btn, type ToolKey } from "@/app/components/ToolHeader";
 
 /** 首頁四個大入口：用「我要做什麼」來找工具。 */
-const TASKS: { tool: ToolKey; href: string; task: string; hint: string; short: string }[] = [
-  { tool: "draw", href: "/draw", task: "我要抽籤", hint: "點名、分組、抽獎都能用", short: "點名、分組、抽獎" },
+const TASKS: { tool: ToolKey; href: string; task: string; hint: string; short: string; note?: string }[] = [
+  {
+    tool: "draw",
+    href: "/draw",
+    task: "我要抽籤",
+    hint: "點名、分組、抽獎都能用",
+    short: "點名、分組、抽獎",
+    note: "學生名單不會上傳",
+  },
   { tool: "timer", href: "/timer", task: "我要計時", hint: "投影現在時間、節次與考程", short: "課堂流程、考試考程" },
   { tool: "classroom", href: "/classroom", task: "我要開始課堂模式", hint: "安靜作業、小組討論，一鍵投影指令", short: "投影課堂指令與倒數" },
   { tool: "countdown", href: "/countdown", task: "我要看放假倒數", hint: "離寒暑假還有幾天、還要上幾天班", short: "寒暑假倒數與工作量" },
@@ -13,7 +20,7 @@ const TASKS: { tool: ToolKey; href: string; task: string; hint: string; short: s
 const FEATURES: { icon: IconName; title: string; desc: string }[] = [
   { icon: "noLogin", title: "不用登入", desc: "打開網址就能用，不必註冊帳號。" },
   { icon: "lock", title: "不會上傳學生名單", desc: "名單只在你的瀏覽器裡處理。" },
-  { icon: "drive", title: "設定保存在這台裝置", desc: "下次打開，課表和名單都還在。" },
+  { icon: "drive", title: "設定保存在這台裝置", desc: "同一台裝置下次打開，課表和名單都還在。" },
   { icon: "maximize", title: "支援全螢幕投影", desc: "控制台和投影畫面分開，學生只看到重點。" },
   { icon: "devices", title: "手機、平板、電腦都能用", desc: "在手機上設定，投影用電腦。" },
 ];
@@ -47,7 +54,7 @@ const DETAILS: { tool: ToolKey; href: string; scene: string; desc: string; featu
   {
     tool: "countdown",
     href: "/countdown",
-    scene: "看得到倒數，也看得到走了多遠",
+    scene: "撐到放假：看得到倒數，也看得到走了多遠",
     desc: "寒暑假倒數到秒，扣掉週末與國定假日，算出真正還要上幾天班、幾小時。",
     features: ["內建 115 學年度行事曆（可自行修改）", "加入校慶補休等自訂假日", "顯示下一個平日放假"],
     cta: "看放假倒數",
@@ -87,13 +94,14 @@ export default function Home() {
               </p>
             </div>
             <div className="hidden shrink-0 gap-3 sm:flex">
-              <a href="#tools" className={`${btn.base} ${btn.secondary} min-h-[52px] px-5 text-base`}>
-                選擇工具
-              </a>
-              <Link href="/timer" className={`${btn.base} min-h-[52px] bg-timer px-5 text-base text-white hover:brightness-110`}>
-                <Icon name="clock" className="h-5 w-5" strokeWidth={2.2} />
-                最常用：開始課堂時鐘
+              <Link href="/timer" className={`${btn.base} ${btn.secondary} min-h-[52px] px-5 text-base`}>
+                <Icon name="clock" className={`h-5 w-5 ${TOOLS.timer.text}`} strokeWidth={2.2} />
+                最常用：課堂時鐘
               </Link>
+              <a href="#tools" className={`${btn.base} ${btn.dark} min-h-[52px] px-6 text-base`}>
+                選擇工具
+                <Icon name="chevronDown" className="h-5 w-5" strokeWidth={2.4} />
+              </a>
             </div>
           </div>
 
@@ -113,6 +121,12 @@ export default function Home() {
                     <span className="text-[19px] font-black sm:text-[26px] sm:leading-tight">{t.task}</span>
                     <span className="text-sm text-muted sm:hidden">{t.short}</span>
                     <span className="hidden text-[15px] leading-6 text-muted sm:block">{t.hint}</span>
+                    {t.note && (
+                      <span className="mt-0.5 flex items-center gap-1.5 text-[13px] font-bold text-[#065f46]">
+                        <Icon name="lock" className="h-3.5 w-3.5 shrink-0" strokeWidth={2.4} />
+                        {t.note}
+                      </span>
+                    )}
                   </span>
                   <Icon name="chevronRight" className={`h-[22px] w-[22px] shrink-0 sm:hidden ${c.text}`} strokeWidth={2.4} />
                   <span className={`hidden text-[15px] font-bold sm:block ${c.text}`}>
@@ -137,6 +151,9 @@ export default function Home() {
                 </li>
               ))}
             </ul>
+            <p className="border-t border-white/15 pt-4 text-sm leading-6 text-[#e7e2d9]">
+              設定和名單只存在目前這台裝置的瀏覽器：換電腦、換瀏覽器，或清除瀏覽器資料後不會保留。課堂時鐘的課表可以先「匯出」帶到別台電腦。
+            </p>
           </section>
         </div>
 
@@ -185,7 +202,7 @@ export default function Home() {
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-8">
           <span className="flex items-center gap-2">
             <Icon name="lock" className="h-[18px] w-[18px] shrink-0" />
-            所有設定只會儲存在這台裝置的瀏覽器，不會上傳到雲端。
+            所有設定只會儲存在這台裝置的瀏覽器，不會上傳到雲端；換裝置或清除瀏覽器資料後需要重新設定。
           </span>
           <span>© {new Date().getFullYear()} 小張的小工具箱</span>
         </div>

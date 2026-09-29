@@ -10,7 +10,7 @@ const VERSION = "v1";
 const PAGES = `chang-pages-${VERSION}`;
 const ASSETS = `chang-assets-${VERSION}`;
 const ROUTES = ["/", "/draw", "/timer", "/timer/display", "/classroom", "/countdown"];
-const EXTRA = ["/manifest.webmanifest", "/icon.svg", "/apple-icon.png", "/icons/icon-192.png", "/icons/icon-512.png"];
+const EXTRA = ["/manifest.webmanifest", "/favicon.ico", "/icon.png", "/apple-icon.png", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 /** 抓下每個頁面，並把頁面裡用到的程式、樣式、字型一起存起來。 */
 async function precache() {

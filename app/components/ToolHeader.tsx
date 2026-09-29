@@ -1,5 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import logo from "./brand-logo.webp";
 import { Icon, type IconName } from "./Icon";
 
 export type ToolKey = "draw" | "timer" | "classroom" | "countdown";
@@ -52,11 +54,9 @@ export const btn = {
 
 export function Logo() {
   return (
-    <Link href="/" className="flex min-h-11 items-center gap-2.5 rounded-xl font-black text-ink">
-      <span className="flex h-[34px] w-[34px] items-center justify-center rounded-[10px] bg-ink text-white">
-        <Icon name="toolbox" className="h-5 w-5" />
-      </span>
-      <span className="text-[17px]">小張的小工具箱</span>
+    <Link href="/" className="flex min-h-11 items-center rounded-xl">
+      {/* 不經過圖片最佳化，網址會在 /_next/static，離線時也能從快取拿到 */}
+      <Image src={logo} alt="小張的小工具箱" priority unoptimized className="h-12 w-auto sm:h-14" />
     </Link>
   );
 }

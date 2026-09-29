@@ -100,7 +100,10 @@ function WorkloadCard({ now, mounted, s }: { now: Date; mounted: boolean; s: Set
       <span className="mt-2 text-base font-bold text-[#5f594f] sm:text-lg">{label}</span>
       <span
         className="font-black leading-none tracking-[-0.05em] text-[#3d3935] tabular-nums"
-        style={{ fontSize: "clamp(3.5rem, 9vw, 5.5rem)" }}
+        // 跟著卡片寬度縮放；四位數以上（例如 1,384 小時）再小一點，才不會擠在一起
+        style={{
+          fontSize: value.toLocaleString().length <= 3 ? "clamp(3rem, 23cqw, 5.5rem)" : "clamp(2.5rem, 16cqw, 5rem)",
+        }}
       >
         {mounted ? value.toLocaleString() : "--"}
       </span>
@@ -112,6 +115,7 @@ function WorkloadCard({ now, mounted, s }: { now: Date; mounted: boolean; s: Set
     <section
       className="relative flex flex-col overflow-hidden rounded-[2.25rem] border border-[#e6dfd1] bg-[#fdfbf6] py-7 pl-12 pr-7 shadow-sm sm:py-9 sm:pl-14 sm:pr-9"
       style={{
+        containerType: "inline-size",
         backgroundImage:
           "repeating-linear-gradient(to bottom, transparent 0 35px, #ece6da 35px 36px)",
       }}
@@ -233,12 +237,12 @@ export default function CountdownPage() {
           <TargetToggle value={s.target} onChange={(t) => update({ target: t })} />
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-2">
           <CountdownCard now={now} mounted={mounted} s={s} />
           <WorkloadCard now={now} mounted={mounted} s={s} />
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-2">
           <TodayCard now={now} s={s} mounted={mounted} onEditQuotes={() => openAt("quotes")} />
           <StagesCard now={now} s={s} mounted={mounted} onAddEvent={() => openAt("events")} />
         </div>

@@ -273,7 +273,7 @@ export type Milestone = {
   date: Date;
 };
 
-/** 學期里程碑：全部由學期日期算出來，不用另外記錄；日期到了就解鎖徽章。 */
+/** 學年里程碑：全部由學期日期算出來，不用另外記錄；日期到了就解鎖徽章。 */
 export function milestones(s: Settings): Milestone[] {
   const sem = dateOf(s, "semesterStart");
   const winter = dateOf(s, "winterStart");

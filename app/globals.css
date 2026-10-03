@@ -4,6 +4,9 @@
   --background: #f6f3ed;
   --foreground: #1f1d1a;
   color-scheme: light;
+  /* 全站字型：jf open 粉圓（見 app/fonts.css），數字等寬，計時器跳動不會晃 */
+  --app-font: "ChangToolsRound", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-mono: var(--app-font);
 }
 
 /*
@@ -13,8 +16,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--app-font);
+  --font-mono: var(--app-font);
 
   --color-paper: #f6f3ed;
   --color-ink: #1f1d1a;
@@ -35,9 +38,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family:
-    var(--font-geist-sans), "PingFang TC", "Noto Sans TC", "Microsoft JhengHei",
-    system-ui, sans-serif;
+  font-family: var(--app-font);
 }
 
 /* 鍵盤操作時一定看得到焦點 */

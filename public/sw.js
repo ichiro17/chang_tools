@@ -10,7 +10,15 @@ const VERSION = "v1";
 const PAGES = `chang-pages-${VERSION}`;
 const ASSETS = `chang-assets-${VERSION}`;
 const ROUTES = ["/", "/draw", "/timer", "/timer/display", "/classroom", "/countdown"];
-const EXTRA = ["/manifest.webmanifest", "/favicon.ico", "/icon.png", "/apple-icon.png", "/icons/icon-192.png", "/icons/icon-512.png"];
+const EXTRA = [
+  "/manifest.webmanifest",
+  "/favicon.ico",
+  "/icon.png",
+  "/apple-icon.png",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
+  "/fonts/jf-openhuninn-1.1/0.woff2",
+];
 
 /** 抓下每個頁面，並把頁面裡用到的程式、樣式、字型一起存起來。 */
 async function precache() {
@@ -65,7 +73,10 @@ self.addEventListener("message", (event) => {
 });
 
 const isAsset = (url) =>
-  url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/") || EXTRA.includes(url.pathname);
+  url.pathname.startsWith("/_next/static/") ||
+  url.pathname.startsWith("/icons/") ||
+  url.pathname.startsWith("/fonts/") ||
+  EXTRA.includes(url.pathname);
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;

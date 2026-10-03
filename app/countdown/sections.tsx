@@ -159,7 +159,7 @@ function badgeOf(m: Milestone) {
   return BADGE[m.kind];
 }
 
-/** 學期里程碑與成就徽章：日期到了就解鎖，最近達成的會跳出恭喜。 */
+/** 學年里程碑與成就徽章：日期到了就解鎖，最近達成的會跳出恭喜。 */
 export function MilestonesCard({ now, s, mounted }: { now: Date; s: Settings; mounted: boolean }) {
   const t0 = startOfDay(now);
   const list = milestones(s);
@@ -170,7 +170,7 @@ export function MilestonesCard({ now, s, mounted }: { now: Date; s: Settings; mo
   return (
     <Card>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Chip icon={chipIcon("trophy")}>學期里程碑</Chip>
+        <Chip icon={chipIcon("trophy")}>學年里程碑</Chip>
         {mounted && (
           <span className="text-sm font-bold text-[#6f685e]">
             已解鎖 {got.length} / {list.length} 個徽章

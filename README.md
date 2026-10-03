@@ -50,7 +50,7 @@
 - 「計算方式」說明扣掉了哪些日子，數字怎麼來的一清二楚
 - 接下來的小目標：週末、下一個連假、自訂事件（段考、校慶、發薪日）、寒暑假分段倒數
 - 今天：是否為工作日，加上每日一句教師生存語錄（可自己新增）
-- 學期里程碑與成就徽章：撐過第一週、學期過半、倒數 100 天⋯⋯日期到了自動解鎖
+- 學年里程碑與成就徽章：撐過第一週、學期過半、倒數 100 天⋯⋯日期到了自動解鎖
 - 我的學校行事曆：自訂不上班日與補課日，也可以一次貼上整份行事曆匯入（支援 CSV、Excel 複製、民國年、日期區間）
 - 設定存在瀏覽器本機（localStorage）
 
@@ -61,6 +61,7 @@
 - [Next.js 16](https://nextjs.org)（App Router、Turbopack）
 - React 19
 - [Tailwind CSS v4](https://tailwindcss.com)
+- 字型：[jf open 粉圓](https://github.com/justfont/open-huninn-font)（SIL OFL 1.1），切分成多個 WOFF2 只下載用到的部分，重新產生方式見 `scripts/build-font.py`
 - TypeScript
 
 沒有後端、沒有資料庫；所有設定都存在使用者自己的瀏覽器。

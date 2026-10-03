@@ -1,0 +1,19 @@
+jf open 粉圓 1.1（jf-openhuninn）
+
+[Kosugi Maru]
+      Copyright(c)2010 MOTOYA CO.,LTD.            
+
+      [Varela Round]
+      Copyright 2011-2016 The Varela Round Project Authors (https://github.com/alefalefalef/Varela-Round-Hebrew/), with Reserved Font Names 'Varela' and 'Varela Round'.            
+
+      [jf open huninn]
+      2020(c)The jf open huninn font is redistributed by justfont CO.,LTD, with Reserved Font Names 'open huninn' and 'huninn'. under SIL Open Font License. The Hanzi part of this project was derived from Kosugi Maru under Apache-2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software.
+
+License URL: http://scripts.sil.org/OFL
+Source: https://github.com/justfont/open-huninn-font
+
+本網站的字型檔是由原始字型切分成多個子集（subset）並轉為 WOFF2，字型內容未經修改。
+
+依 SIL OFL 1.1 保留字型名稱（Reserved Font Name）規定，切分後的字型內部名稱改為 ChangToolsRound。

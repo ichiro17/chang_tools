@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // 字型檔放在帶版本號的資料夾，內容不會變，可以長期快取
+        source: "/fonts/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
         source: "/sw.js",
         headers: [
           { key: "Content-Type", value: "application/javascript; charset=utf-8" },
